@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id           String   @id @default(uuid())
+  email     String   @unique
+  password String
+}
+
+model FoodItem {
+  id               String   @id @default(uuid())
+  name             String
+  description      String
+  price            Decimal
+  isListed         Boolean @default(false)
+  isDeleted         Boolean   @default(false)
+
+  OrderItem OrderItem[]
+}
+
+model Order {
+  id              String       @id @default(uuid())
+  customerName    String
+  status          String       // 'initiated', 'completed', 'canceled'
+  validUntil      DateTime     // Add this to track expiration
+  orderItems      OrderItem[]
+  transaction     Transaction[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  orderId    String
+  foodItemId String
+  quantity   Int
+
+  order      Order    @relation(fields: [orderId], references: [id])
+  foodItem   FoodItem @relation(fields: [foodItemId], references: [id])
+}
+
+model Transaction {
+  id                  String   @id @default(uuid()) // Unique transaction ID in your DB
+  orderId             String   // Foreign key to the Orders table
+  merchantTransactionId String  @unique // Internal transaction ID
+  phonepeTransactionId String? // PhonePe transaction ID
+  amount              Decimal  // Transaction amount
+  status              String   // 'pending', 'successful', 'failed'
+  paymentMethod       String?   // E.g., 'PhonePe'
+  createdAt           DateTime @default(now()) // When the transaction was created
+  updatedAt           DateTime @updatedAt // Last updated timestamp
+  order               Order   @relation(fields: [orderId], references: [id])
+}
