@@ -8,53 +8,102 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
-model User {
-  id           String   @id @default(uuid())
+
+model Admin {
+  id        String   @id @default(uuid())
   email     String   @unique
-  password String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Owner {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  password     String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId String     @unique// Foreign key to associate with a restaurant
+  allowService Boolean    @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Restaurant {
+  id       String  @id @default(uuid())
+  name     String
+  location String?
+  description String?
+  slug     String  @unique
+  isOpen   Boolean @default(false)
+  owner  Owner? // Foreign key to associate with an owner
+
+  foodItems    FoodItem[]    @relation("RestaurantFoodItems")
+  orders       Order[]       @relation("RestaurantOrders")
+  transactions Transaction[] @relation("RestaurantTransactions")
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model FoodItem {
-  id               String   @id @default(uuid())
-  name             String
-  description      String
-  price            Decimal
-  isListed         Boolean @default(false)
-  isDeleted         Boolean   @default(false)
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  price       Decimal
+  isListed    Boolean @default(false)
+  isDeleted   Boolean @default(false)
+
+  restaurantId String // Foreign key to associate with a restaurant
+  restaurant   Restaurant @relation("RestaurantFoodItems", fields: [restaurantId], references: [id])
 
   OrderItem OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Order {
-  id              String       @id @default(uuid())
-  customerName    String
-  status          String       // 'initiated', 'completed', 'canceled'
-  validUntil      DateTime     // Add this to track expiration
-  orderItems      OrderItem[]
-  transaction     Transaction[]
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id           String        @id @default(uuid())
+  customerName String
+  status       String // 'initiated', 'completed', 'canceled'
+  validUntil   DateTime // To track expiration
+  orderItems   OrderItem[]
+  transaction  Transaction[]
+
+  restaurantId String // Foreign key to associate with a restaurant
+  restaurant   Restaurant @relation("RestaurantOrders", fields: [restaurantId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id         String  @id @default(uuid())
+  id         String @id @default(uuid())
   orderId    String
   foodItemId String
   quantity   Int
 
-  order      Order    @relation(fields: [orderId], references: [id])
-  foodItem   FoodItem @relation(fields: [foodItemId], references: [id])
+  order    Order    @relation(fields: [orderId], references: [id])
+  foodItem FoodItem @relation(fields: [foodItemId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Transaction {
-  id                  String   @id @default(uuid()) // Unique transaction ID in your DB
-  orderId             String   // Foreign key to the Orders table
+  id                    String  @id @default(uuid()) // Unique transaction ID
+  orderId               String // Foreign key to the Orders table
   merchantTransactionId String  @unique // Internal transaction ID
-  phonepeTransactionId String? // PhonePe transaction ID
-  amount              Decimal  // Transaction amount
-  status              String   // 'pending', 'successful', 'failed'
-  paymentMethod       String?   // E.g., 'PhonePe'
-  createdAt           DateTime @default(now()) // When the transaction was created
-  updatedAt           DateTime @updatedAt // Last updated timestamp
-  order               Order   @relation(fields: [orderId], references: [id])
+  phonepeTransactionId  String? // PhonePe transaction ID
+  amount                Decimal // Transaction amount
+  status                String // 'pending', 'successful', 'failed'
+  paymentMethod         String? // E.g., 'PhonePe'
+  order                 Order   @relation(fields: [orderId], references: [id])
+
+  restaurantId String // Foreign key to associate with a restaurant
+  restaurant   Restaurant @relation("RestaurantTransactions", fields: [restaurantId], references: [id])
+
+  createdAt DateTime @default(now()) // Transaction creation time
+  updatedAt DateTime @updatedAt // Last updated time
 }
