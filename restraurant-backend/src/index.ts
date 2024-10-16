@@ -17,13 +17,15 @@ import http from "http";
 import { Server } from "socket.io";
 
 // import routes
-import userRouter from "./routes/userRoutes";
+// import userRouter from "./routes/userRoutes";
 import testRouter from "./routes/testRoute";
-import foodRouter from "./routes/foodRoute";
-import orderRouter from "./routes/orderRoute";
-import cartRouter from "./routes/cartRoutes";
-import paymentRouter from "./routes/paymentRoutes";
-import analyticsRouter from "./routes/analyticsRoute";
+// import foodRouter from "./routes/foodRoute";
+// import orderRouter from "./routes/orderRoute";
+// import cartRouter from "./routes/cartRoutes";
+// import paymentRouter from "./routes/paymentRoutes";
+// import analyticsRouter from "./routes/analyticsRoute";
+import adminRouter from "./routes/adminRoutes";
+import ownerRouter from "./routes/ownerRoutes";
 
 // session
 import sessionMiddleware from "./middleware/session.middleware";
@@ -54,17 +56,21 @@ dotenv.config();
 // 1. test route
 app.use("/api/", testRouter);
 // 2. user route
-app.use("/api/user", userRouter);
+// app.use("/api/user", userRouter);
 // 3. food route
-app.use("/api/food", foodRouter);
-// 4. Order route
-app.use("/api/order", orderRouter);
-// 5. Cart route
-app.use("/api/cart", cartRouter);
-// 6. payment route
-app.use("/api/payment", paymentRouter);
-// 7. admin analytics route
-app.use("/api/admin", analyticsRouter);
+// app.use("/api/food", foodRouter);
+// // 4. Order route
+// app.use("/api/order", orderRouter);
+// // 5. Cart route
+// app.use("/api/cart", cartRouter);
+// // 6. payment route
+// app.use("/api/payment", paymentRouter);
+// // 7. owner analytics route
+// app.use("/api/owner", analyticsRouter);
+// 8. admin route
+app.use("/api/admin", adminRouter);
+// 9. owner route
+app.use("/api/owner", ownerRouter);
 
 // port number
 const port: number = 3001;
