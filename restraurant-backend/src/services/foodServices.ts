@@ -1,9 +1,24 @@
+// express
+import { Request, Response } from "express";
 // prisma
-import { CreateFoodItemDto, UpdateFoodItemDto } from "../dto/foodItemDto";
 import prisma from "../prisma/client";
 // foodItem Dto
+import { CreateFoodItemDto, UpdateFoodItemDto } from "../dto/foodItemDto";
+// auth
+import { CustomJwtPayload, CustomRequest } from "../middleware/auth.middleware";
 
 class FoodItemService {
+  // check request authentication
+  checkRequestAuthentication = (req: Request, res: Response) => {
+    if ((req as CustomRequest).token) {
+      const { role } = (req as CustomRequest).token as CustomJwtPayload;
+      if (role !== "owner") {
+        throw new Error(
+          "Access denied:You are not allowed to do this action!!"
+        );
+      }
+    }
+  };
   // create food item
   createFoodItem = async (data: CreateFoodItemDto) => {
     const foodItem = await prisma.foodItem.create({
@@ -12,6 +27,11 @@ class FoodItemService {
         description: data.description,
         price: data.price,
         isListed: data.isListed,
+        restaurant: {
+          connect: {
+            id: data.restaurant,
+          },
+        },
       },
       include: {
         OrderItem: true,

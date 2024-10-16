@@ -17,9 +17,8 @@ import http from "http";
 import { Server } from "socket.io";
 
 // import routes
-// import userRouter from "./routes/userRoutes";
 import testRouter from "./routes/testRoute";
-// import foodRouter from "./routes/foodRoute";
+import foodRouter from "./routes/foodRoute";
 // import orderRouter from "./routes/orderRoute";
 // import cartRouter from "./routes/cartRoutes";
 // import paymentRouter from "./routes/paymentRoutes";
@@ -55,10 +54,10 @@ dotenv.config();
 //? routes
 // 1. test route
 app.use("/api/", testRouter);
-// 2. user route
-// app.use("/api/user", userRouter);
+// 2. owner route
+app.use("/api/owner", ownerRouter);
 // 3. food route
-// app.use("/api/food", foodRouter);
+app.use("/api/food", foodRouter);
 // // 4. Order route
 // app.use("/api/order", orderRouter);
 // // 5. Cart route
@@ -69,8 +68,6 @@ app.use("/api/", testRouter);
 // app.use("/api/owner", analyticsRouter);
 // 8. admin route
 app.use("/api/admin", adminRouter);
-// 9. owner route
-app.use("/api/owner", ownerRouter);
 
 // port number
 const port: number = 3001;

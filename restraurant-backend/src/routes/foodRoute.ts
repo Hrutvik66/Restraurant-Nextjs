@@ -4,6 +4,9 @@ import { Router } from "express";
 // Controller
 import FoodItemController from "../controllers/foodController";
 
+// Middleware to authenticate requests (add token to req.body) using JWT
+import { auth } from "../middleware/auth.middleware";
+
 const foodRouter = Router();
 
 const {
@@ -16,7 +19,7 @@ const {
 } = FoodItemController;
 
 // create food item
-foodRouter.post("/", createFoodItem);
+foodRouter.post("/", auth, createFoodItem);
 
 // get all food items
 foodRouter.get("/", getAllFoodItems);
@@ -25,12 +28,12 @@ foodRouter.get("/", getAllFoodItems);
 foodRouter.get("/:id", getFoodItemById);
 
 // delete food item by id
-foodRouter.delete("/:id", deleteFoodItem);
+foodRouter.delete("/:id", auth, deleteFoodItem);
 
 // update food item by id
-foodRouter.put("/:id", updateFoodItem);
+foodRouter.put("/:id", auth, updateFoodItem);
 
 // update food item by status
-foodRouter.patch("/:id", updateFoodItemStatus);
+foodRouter.patch("/:id", auth, updateFoodItemStatus);
 
 export default foodRouter;

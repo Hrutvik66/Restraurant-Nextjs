@@ -6,6 +6,7 @@ export interface CreateFoodItemDto {
   description: string;
   price: number;
   isListed: boolean;
+  restaurant: string;
 }
 
 // update food item
@@ -23,4 +24,5 @@ export interface FoodItemDto {
   description: string;
   price: number;
   isListed: boolean;
+  isDeleted: boolean;
 }
