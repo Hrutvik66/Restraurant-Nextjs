@@ -25,9 +25,7 @@ import foodRouter from "./routes/foodRoute";
 // import analyticsRouter from "./routes/analyticsRoute";
 import adminRouter from "./routes/adminRoutes";
 import ownerRouter from "./routes/ownerRoutes";
-
-// session
-import sessionMiddleware from "./middleware/session.middleware";
+import restaurantRouter from "./routes/restaurantRoutes";
 
 const app: Application = express();
 
@@ -42,8 +40,6 @@ app.use(
 );
 // cookie parser middleware
 app.use(cookieParser());
-// redis + express-session middleware
-app.use(sessionMiddleware);
 // body-parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 // cors middleware
@@ -68,6 +64,8 @@ app.use("/api/food", foodRouter);
 // app.use("/api/owner", analyticsRouter);
 // 8. admin route
 app.use("/api/admin", adminRouter);
+// 9. restaurant route
+app.use("/api/restaurant", restaurantRouter);
 
 // port number
 const port: number = 3001;
