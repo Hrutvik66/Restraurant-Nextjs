@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import {
   BarChart,
   PlusCircle,
@@ -20,12 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
-
-const navItems = [
-  { href: "/admin", label: "Analytics", icon: BarChart },
-  { href: "/admin/add-item", label: "Add Food Item", icon: PlusCircle },
-  { href: "/admin/orders", label: "Orders", icon: Settings },
-];
+import { useRestaurantContext } from "@/context/restaurant-context";
 
 const Sidebar = ({
   className,
@@ -35,6 +30,17 @@ const Sidebar = ({
   collapsed: boolean;
 }) => {
   const pathname = usePathname();
+  const { slug } = useParams();
+
+  const navItems = [
+    { href: `/${slug}/owner/analytics`, label: "Analytics", icon: BarChart },
+    {
+      href: `/${slug}/owner/add-item`,
+      label: "Add Food Item",
+      icon: PlusCircle,
+    },
+    { href: `/${slug}/owner/orders`, label: "Orders", icon: Settings },
+  ];
 
   return (
     <div
@@ -44,15 +50,15 @@ const Sidebar = ({
     >
       <div className="p-4">
         <h1
-          className={`text-2xl font-bold mb-6 overflow-hidden transition-all duration-300 ease-in-out ${
-            collapsed ? "w-0" : "w-full"
+          className={`text-2xl pt-4 font-bold mb-6 overflow-hidden transition-all duration-300 ease-in-out text-nowrap ${
+            collapsed ? "w-0 h-12" : "w-full"
           }`}
         >
-          Admin Panel
+          Owner Panel
         </h1>
       </div>
       <nav>
-        <ul className="space-y-2 px-2">
+        <ul className={`${collapsed ? "" : "space-y-2"} px-2`}>
           {navItems.map((item) => (
             <li key={item.href}>
               <TooltipProvider>
@@ -60,7 +66,9 @@ const Sidebar = ({
                   <TooltipTrigger asChild>
                     <Link
                       href={item.href}
-                      className={`flex items-center space-x-2 p-2 rounded hover:bg-gray-800 transition-colors ${
+                      className={`flex items-center justify-center ${
+                        collapsed ? "" : "space-x-2"
+                      } p-2 rounded hover:bg-gray-800 transition-colors ${
                         pathname === item.href
                           ? "bg-gray-800 text-orange-500"
                           : ""
@@ -96,6 +104,7 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { restaurantData } = useRestaurantContext();
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -123,8 +132,8 @@ export default function AdminLayout({
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden z-[49]">
         <header className="bg-white shadow-md p-4 pt-7 flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            Spice Paradise Admin
+          <h2 className="text-2xl font-semibold text-gray-800 ml-4">
+            {restaurantData?.name}
           </h2>
           <Button
             variant="ghost"

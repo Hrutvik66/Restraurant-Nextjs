@@ -3,7 +3,6 @@ import axios from "axios";
 
 const useApiCall = () => {
   const [isLoadingRequest, setIsLoadingRequest] = useState(false);
-  const [error, setError] = useState(null);
 
   const apiCall = async (url: string, method: string, data: object = {}) => {
     setIsLoadingRequest(true);
@@ -17,14 +16,17 @@ const useApiCall = () => {
       if (response.status === 200 || response.status === 201) {
         return response;
       }
+      console.log("apiCall", response);
+
       setIsLoadingRequest(false);
     } catch (err) {
-      setError(err);
+      console.log("apiCall", err);
       setIsLoadingRequest(false);
+      throw err;
     }
   };
 
-  return { isLoadingRequest, error, apiCall };
+  return { isLoadingRequest, apiCall };
 };
 
 export default useApiCall;

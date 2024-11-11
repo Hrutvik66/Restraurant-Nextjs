@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,26 +10,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Minus, Plus } from "lucide-react";
-import { useFood } from "@/context/food-context";
+import { Minus, Plus } from "lucide-react";
+import { useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import Loader from "@/components/Loader";
 
 const MenuPage = () => {
-  const { foodItems, loading, error } = useFood();
+  const { restaurantData, isRestaurantLoading, isRestaurantError } =
+    useRestaurantContext();
   const { cartItems, addItemToCart, updateItemFromCart } = useCart();
 
-  if (loading) {
+  if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
   }
 
-  if (error) {
+  if (isRestaurantError) {
     return (
       <div className="container mx-auto p-4 h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center justify-center p-6">
-            <Loader2 className="h-16 w-16 animate-spin text-orange-500 mb-4" />
-            <p className="text-lg font-semibold">{error}</p>
+            <p className="text-lg font-semibold">{isRestaurantError}</p>
           </CardContent>
         </Card>
       </div>
@@ -40,7 +40,7 @@ const MenuPage = () => {
     return cartItems.some((cartItem) => cartItem.itemId === itemId);
   };
 
-  const availableItems = foodItems?.filter(
+  const availableItems = restaurantData?.foodItems?.filter(
     (item) => !item.isDeleted && item.isListed
   );
 

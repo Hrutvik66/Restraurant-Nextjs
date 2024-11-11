@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { useFood } from "@/context/food-context";
+import { useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import useApiCall from "@/hooks/use-apicall";
 import { toast } from "@/hooks/use-toast";
@@ -30,8 +30,21 @@ interface FoodData {
   isListed: boolean;
 }
 
+// Error interface
+interface Error {
+  status: number;
+  response: {
+    statusText: string;
+    data: string;
+  };
+}
 const ManageFoodItems = () => {
-  const { foodItems, loading, setRefreshKey } = useFood();
+  const {
+    restaurantData,
+    isRestaurantLoading,
+    isRestaurantError,
+    setRestaurantRefreshKey,
+  } = useRestaurantContext();
   const { setCartRefreshKey } = useCart();
   const { apiCall } = useApiCall();
   const [formData, setFormData] = useState<FoodData>({
@@ -43,6 +56,7 @@ const ManageFoodItems = () => {
   });
   const [editMode, setEditMode] = useState(false);
 
+  // handle inputs
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -54,6 +68,7 @@ const ManageFoodItems = () => {
     setFormData((prev) => ({ ...prev, isListed: checked }));
   };
 
+  // handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -65,7 +80,7 @@ const ManageFoodItems = () => {
         );
 
         if (response && response.status === 200) {
-          setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+          setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
           setCartRefreshKey((prevKey: number) => (prevKey + 1) % 10);
           toast({
             title: "Food Item Updated",
@@ -75,9 +90,10 @@ const ManageFoodItems = () => {
         }
       } else {
         const response = await apiCall("/api/food", "POST", formData);
+        console.log("response", response);
 
         if (response && response.status === 201) {
-          setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+          setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
           toast({
             title: "Food Item Added",
             description: "The item has been added to the menu.",
@@ -85,26 +101,40 @@ const ManageFoodItems = () => {
           });
         }
       }
-    } catch (error) {
-      toast({
-        title: "Failed to Save Changes",
-        description: "Try again after sometime",
-        variant: "default",
-      });
+    } catch (err: unknown) {
+      const error = err as Error;
+      if (error.status === 401) {
+        toast({
+          title: error.response.statusText,
+          description: error.response.data,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Failed to Save Changes",
+          description: "Try again after sometime",
+          variant: "default",
+        });
+      }
     }
     resetForm();
   };
 
+  /**
+   * Edits a food item.
+   * @param {FoodData} item - The food item to edit.
+   */
   const handleEdit = (item: FoodData) => {
     setFormData({ ...item });
     setEditMode(true);
   };
 
+  // handle delete item
   const handleDelete = async (id: string) => {
     try {
       const response = await apiCall(`/api/food/${id}`, "DELETE");
       if (response && response.status === 200) {
-        setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+        setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         setCartRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         toast({
           title: "Food Item Deleted",
@@ -112,22 +142,36 @@ const ManageFoodItems = () => {
           variant: "destructive",
         });
       }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete the item.",
-        variant: "destructive",
-      });
+    } catch (err: unknown) {
+      const error = err as Error;
+      if (error.status === 401) {
+        toast({
+          title: error.response.statusText,
+          description: error.response.data,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Failed to Save Changes",
+          description: "Try again after sometime",
+          variant: "default",
+        });
+      }
     }
   };
 
+  /**
+   * Toggle the status of a food item, listing or unlisting it from the menu.
+   * @param id the id of the food item to toggle
+   * @param currentStatus the current status of the item
+   */
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
       const response = await apiCall(`/api/food/${id}`, "PATCH", {
         isListed: !currentStatus,
       });
       if (response && response.status === 200) {
-        setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+        setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         setCartRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         toast({
           title: "Status Updated",
@@ -146,6 +190,11 @@ const ManageFoodItems = () => {
     }
   };
 
+  /**
+   * Resets the form data to its initial state.
+   * This function is called when the form is submitted successfully
+   * or when the user clicks on the cancel button.
+   */
   const resetForm = () => {
     setFormData({
       id: null,
@@ -157,7 +206,10 @@ const ManageFoodItems = () => {
     setEditMode(false);
   };
 
-  const nonDeletedFoodItems = foodItems.filter((item) => !item.isDeleted);
+  // check for items deleted by owner
+  const nonDeletedFoodItems = restaurantData?.foodItems.filter(
+    (item) => !item.isDeleted
+  );
 
   return (
     <div className="container mx-auto p-4">
@@ -230,12 +282,16 @@ const ManageFoodItems = () => {
             <CardTitle>Food Items List</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
+            {isRestaurantLoading ? (
               <div className="flex flex-col items-center justify-center p-6">
                 <Loader2 className="h-16 w-16 animate-spin text-orange-500 mb-4" />
                 <p className="text-lg font-semibold">Loading...</p>
               </div>
-            ) : nonDeletedFoodItems.length > 0 ? (
+            ) : isRestaurantError ? (
+              <div className="flex flex-col items-center justify-center p-6">
+                <p className="text-lg font-semibold">{isRestaurantError}</p>
+              </div>
+            ) : nonDeletedFoodItems && nonDeletedFoodItems.length > 0 ? (
               <ScrollArea className="max-h-[400px] overflow-auto">
                 <Table>
                   <TableHeader>
