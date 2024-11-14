@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -41,6 +41,8 @@ import {
 import useFetch from "@/hooks/use-fetch";
 import useApiCall from "@/hooks/use-apicall";
 import { useSocket } from "@/context/socket-context";
+import CustomErrorInterface from "../../../../lib/CustomErrorInterface";
+import Cookies from "js-cookie";
 
 interface Order {
   id: string;
@@ -170,38 +172,57 @@ const AdminOrdersPage = () => {
   console.log("order", orders);
   console.log("filtered orders", filteredOrders);
 
-  const transformOrdersData = (orders: any[]): Order[] => {
-    return orders.map((order) => {
-      return formatOrder(order);
-    });
-  };
+  const transformOrdersData = useCallback((orders: any[]): Order[] => {
+    return orders.map((order) => formatOrder(order));
+  }, []);
 
-  const formatOrder = (order: any) => {
-    const total = order.orderItems.reduce(
-      (sum: number, item: any) => sum + item.foodItem.price * item.quantity,
+  const formatOrder = (order: any): Order => {
+    const {
+      id,
+      customerName: customer,
+      orderItems,
+      status,
+      transaction,
+      createdAt,
+    } = order;
+
+    const total = orderItems.reduce(
+      (sum: number, { quantity, foodItem: { price } }: any) =>
+        sum + quantity * price,
       0
     );
 
     const transactionStatus =
-      order.transaction[0].status === "success" ? "Paid" : "Pending";
+      transaction[0].status === "success" ? "Paid" : "Pending";
 
-    const createdAt = new Date(order.createdAt);
-    const date = createdAt.toISOString().split("T")[0];
-    const time = createdAt.toISOString().split("T")[1].slice(0, 5);
+    const createdAtDate = new Date(createdAt);
+    const date = createdAtDate.toISOString().split("T")[0];
+    const time = createdAtDate.toISOString().split("T")[1].slice(0, 5);
 
     return {
-      id: order.id,
-      customer: order.customerName,
-      items: order.orderItems.map((item: any) => ({
-        name: item.foodItem.name,
-        quantity: item.quantity,
-        price: parseFloat(item.foodItem.price),
-      })),
-      total: total,
-      status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
-      transactionStatus: transactionStatus,
-      date: date,
-      time: time,
+      id,
+      customer,
+      items: orderItems.map(
+        ({
+          quantity,
+          foodItem: { name, price },
+        }: {
+          quantity: number;
+          foodItem: {
+            name: string;
+            price: number;
+          };
+        }) => ({
+          name,
+          quantity,
+          price: parseFloat(price.toString()),
+        })
+      ),
+      total,
+      status: status,
+      transactionStatus,
+      date,
+      time,
     };
   };
 
@@ -212,8 +233,7 @@ const AdminOrdersPage = () => {
     };
 
     fetchData();
-  }, [apiData, setRefreshKey]);
-
+  }, [apiData, setRefreshKey, transformOrdersData]);
   useEffect(() => {
     const updateFilteredOrders = () => {
       const filtered = orders.filter(
@@ -256,9 +276,15 @@ const AdminOrdersPage = () => {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const response = await apiCall(`/api/order/${orderId}`, "PUT", {
-        status: newStatus,
-      });
+      const token = Cookies.get("token");
+      const response = await apiCall(
+        `/api/order/${orderId}`,
+        "PUT",
+        {
+          status: newStatus,
+        },
+        token
+      );
       if (response && response.status === 200) {
         setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         toast({
@@ -267,9 +293,10 @@ const AdminOrdersPage = () => {
         });
       }
     } catch (error) {
+      const err = error as CustomErrorInterface;
       toast({
         title: "Failed to Update Order Status",
-        description: error.message,
+        description: err.response.data.message,
       });
     }
   };
