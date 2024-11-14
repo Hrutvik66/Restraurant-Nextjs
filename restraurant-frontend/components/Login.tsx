@@ -33,16 +33,9 @@ import useApiCall from "@/hooks/use-apicall";
 import { toast } from "@/hooks/use-toast";
 // js cookie
 import Cookies from "js-cookie";
-
-interface Error {
-  status: number;
-  response: {
-    statusText: string;
-    data: {
-      message: string;
-    };
-  };
-}
+// Custom Error interface
+import CustomErrorInterface from "../lib/CustomErrorInterface";
+import { useAuthContext } from "@/context/auth-context";
 
 const LoginPage = ({ role }: { role: string }) => {
   const [email, setEmail] = useState("");
@@ -55,6 +48,7 @@ const LoginPage = ({ role }: { role: string }) => {
   const router = useRouter();
   const { apiCall } = useApiCall();
   const { slug } = useParams();
+  const { login } = useAuthContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +63,7 @@ const LoginPage = ({ role }: { role: string }) => {
 
       if (response && response.status === 200) {
         Cookies.set("token", response.data.token, { expires: 7 });
+        login(response.data.user);
         toast({
           variant: "default",
           title: "Login Successful",
@@ -77,7 +72,7 @@ const LoginPage = ({ role }: { role: string }) => {
         router.push(`/${slug}/owner/analytics`);
       }
     } catch (err) {
-      const error = err as Error;
+      const error = err as CustomErrorInterface;
       toast({
         variant: "destructive",
         title: "Login Error",
