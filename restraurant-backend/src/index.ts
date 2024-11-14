@@ -19,7 +19,7 @@ import { Server } from "socket.io";
 // import routes
 import testRouter from "./routes/testRoute";
 import foodRouter from "./routes/foodRoute";
-// import orderRouter from "./routes/orderRoute";
+import orderRouter from "./routes/orderRoute";
 // import cartRouter from "./routes/cartRoutes";
 // import paymentRouter from "./routes/paymentRoutes";
 // import analyticsRouter from "./routes/analyticsRoute";
@@ -54,8 +54,8 @@ app.use("/api/", testRouter);
 app.use("/api/owner", ownerRouter);
 // 3. food route
 app.use("/api/food", foodRouter);
-// // 4. Order route
-// app.use("/api/order", orderRouter);
+// 4. Order route
+app.use("/api/order", orderRouter);
 // // 5. Cart route
 // app.use("/api/cart", cartRouter);
 // // 6. payment route

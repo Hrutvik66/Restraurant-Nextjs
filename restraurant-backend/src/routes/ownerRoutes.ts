@@ -18,7 +18,7 @@ const ownerRouter = Router();
 // create owner
 ownerRouter.post("/", auth, createOwner);
 // get owner data by id
-ownerRouter.get("/:id", getOwnerData);
+ownerRouter.get("/id", auth, getOwnerData);
 // get all owners
 ownerRouter.get("/", auth, getAllOwners);
 // update owner

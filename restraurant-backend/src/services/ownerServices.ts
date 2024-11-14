@@ -8,10 +8,8 @@ import {
 // crypto
 import crypto from "crypto";
 import jwt, { Secret } from "jsonwebtoken";
-
-interface CustomError extends Error {
-  message: string;
-}
+// customError
+import CustomError from "../utils/CustomError";
 
 class OwnerService {
   // create new owner and restraurant at same time
@@ -91,14 +89,29 @@ class OwnerService {
   // get owner and restaurant data
   getOwnerData = async (id: string) => {
     try {
+      // get owner and restaurant but exclude password and id
+
       const ownerData = await prisma.owner.findUnique({
         where: {
           id: id,
         },
-        include: {
-          restaurant: true,
+        select: {
+          email: true,
+          restaurant: {
+            select: {
+              name: true,
+              slug: true,
+              location: true,
+              description: true,
+              isOpen: true,
+            },
+          },
+          allowService: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
+
       if (!ownerData) {
         throw new Error("Owner not found");
       }
@@ -163,27 +176,45 @@ class OwnerService {
         where: {
           email: email,
         },
+        include: {
+          restaurant: true,
+        },
       });
       if (!owner) {
-        throw new Error("Owner not found");
+        throw new CustomError("Owner not found", 404);
       }
 
       if (!owner.allowService) {
-        throw new Error("Owner service is currently stopped");
+        throw new CustomError("Owner service is currently stopped", 403);
       }
       const hashedPassword = crypto
         .createHash("sha1")
         .update(password)
         .digest("hex");
       if (hashedPassword !== owner.password) {
-        throw new Error("Invalid password");
+        throw new CustomError("Invalid password", 401);
       }
       // token
       const SECRET_KEY: Secret = process.env.SECRET_KEY!;
       const token = jwt.sign({ id: owner.id, role: "owner" }, SECRET_KEY, {
         expiresIn: "7d",
       });
-      return { user: owner, token };
+
+      const user = {
+        email: owner.email,
+        restaurant: {
+          name: owner.restaurant.name,
+          slug: owner.restaurant.slug,
+          location: owner.restaurant.location,
+          description: owner.restaurant.description,
+          isOpen: owner.restaurant.isOpen,
+        },
+        allowService: owner.allowService,
+        createdAt: owner.createdAt,
+        updatedAt: owner.updatedAt,
+      };
+
+      return { user, token };
     } catch (error) {
       throw error;
     }
