@@ -14,10 +14,11 @@ const {
 } = OrderService;
 
 class OrderController {
-  // get an order by id
+  // get an order by id of specific restaurant
   getOrderById = async (req: Request, res: Response) => {
     try {
-      const order = await getOrderById(req.params.id);
+      const slug = req.query.slug as string;
+      const order = await getOrderById(req.params.id, slug);
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -30,7 +31,11 @@ class OrderController {
   // get order by transaction id and calculate order number for the day
   getOrderByTransactionId = async (req: Request, res: Response) => {
     try {
-      const order = await getOrderByTransactionId(req.params.id as string);
+      const slug = req.query.slug as string;
+      const order = await getOrderByTransactionId(
+        req.params.id as string,
+        slug
+      );
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
@@ -45,7 +50,7 @@ class OrderController {
   // get all orders
   getAllOrders = async (req: Request, res: Response) => {
     try {
-      const orders = await getAllOrders();
+      const orders = await getAllOrders(req.query.slug as string);
       res.status(200).json(orders);
     } catch (error) {
       res.status(500).json({ message: "Failed to get all orders" });
@@ -57,7 +62,8 @@ class OrderController {
     try {
       const updatedOrder = await updateOrderStatus(
         req.params.id,
-        req.body.status
+        req.body.status,
+        req.query.slug as string
       );
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });

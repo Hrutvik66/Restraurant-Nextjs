@@ -21,7 +21,7 @@ import testRouter from "./routes/testRoute";
 import foodRouter from "./routes/foodRoute";
 import orderRouter from "./routes/orderRoute";
 // import cartRouter from "./routes/cartRoutes";
-// import paymentRouter from "./routes/paymentRoutes";
+import paymentRouter from "./routes/paymentRoutes";
 // import analyticsRouter from "./routes/analyticsRoute";
 import adminRouter from "./routes/adminRoutes";
 import ownerRouter from "./routes/ownerRoutes";
@@ -58,8 +58,8 @@ app.use("/api/food", foodRouter);
 app.use("/api/order", orderRouter);
 // // 5. Cart route
 // app.use("/api/cart", cartRouter);
-// // 6. payment route
-// app.use("/api/payment", paymentRouter);
+// 6. payment route
+app.use("/api/payment", paymentRouter);
 // // 7. owner analytics route
 // app.use("/api/owner", analyticsRouter);
 // 8. admin route

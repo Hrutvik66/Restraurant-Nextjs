@@ -87,7 +87,7 @@ class OwnerService {
     }
   };
   // get owner and restaurant data
-  getOwnerData = async (id: string) => {
+  getOwnerData = async (id: string, slug: string) => {
     try {
       // get owner and restaurant but exclude password and id
 
@@ -113,12 +113,15 @@ class OwnerService {
       });
 
       if (!ownerData) {
-        throw new Error("Owner not found");
+        throw new CustomError("Owner not found", 404);
+      }
+
+      if (ownerData.restaurant.slug !== slug) {
+        throw new CustomError("You are not a owner of this restaurant", 401);
       }
       return ownerData;
     } catch (error) {
-      console.error(error);
-      throw new Error("Failed to get owner data");
+      throw error;
     }
   };
 
@@ -131,7 +134,7 @@ class OwnerService {
         },
       });
       if (!ownerData) {
-        throw new Error("Owner not found");
+        throw new CustomError("Owner not found", 404);
       }
 
       const updatedOwner = await prisma.owner.update({
@@ -149,8 +152,7 @@ class OwnerService {
       });
       return updatedOwner;
     } catch (error) {
-      console.error(error);
-      throw new Error("Failed to toggle owner service");
+      throw error;
     }
   };
 
@@ -170,7 +172,7 @@ class OwnerService {
   };
 
   // login owner
-  login = async (email: string, password: string) => {
+  login = async (email: string, password: string, slug: string) => {
     try {
       const owner = await prisma.owner.findUnique({
         where: {
@@ -186,6 +188,10 @@ class OwnerService {
 
       if (!owner.allowService) {
         throw new CustomError("Owner service is currently stopped", 403);
+      }
+
+      if (owner.restaurant.slug !== slug) {
+        throw new CustomError("You are not a owner of this restaurant", 401);
       }
       const hashedPassword = crypto
         .createHash("sha1")
@@ -221,7 +227,7 @@ class OwnerService {
   };
 
   // toggle Restaurant open
-  toggleRestaurantOpen = async (id: string, isOpen: boolean) => {
+  toggleRestaurantOpen = async (id: string, isOpen: boolean, slug: string) => {
     try {
       const Restaurant = await prisma.restaurant.update({
         where: {
@@ -231,6 +237,14 @@ class OwnerService {
           isOpen: isOpen,
         },
       });
+
+      if (!Restaurant) {
+        throw new CustomError("Restaurant not found", 404);
+      }
+
+      if (Restaurant.slug !== slug) {
+        throw new CustomError("You are not a owner of this restaurant", 401);
+      }
       return Restaurant;
     } catch (error) {
       throw new Error("Failed to toggle restaurant open");

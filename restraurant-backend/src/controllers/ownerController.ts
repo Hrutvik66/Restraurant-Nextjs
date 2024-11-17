@@ -62,7 +62,7 @@ class OwnerController {
       if (id === undefined) {
         throw new Error("Session Expired");
       }
-      const ownerData = await getOwnerData(id);
+      const ownerData = await getOwnerData(id, req.query.slug as string);
       res.status(200).json(ownerData);
     } catch (error) {
       res.status(500).json({ message: (error as any).message });
@@ -88,7 +88,11 @@ class OwnerController {
   // user login
   login = async (req: Request, res: Response) => {
     try {
-      const { user, token } = await login(req.body.email, req.body.password);
+      const { user, token } = await login(
+        req.body.email,
+        req.body.password,
+        req.query.slug as string
+      );
       res.status(200).json({ message: "Logged in successfully", user, token });
     } catch (error) {
       console.log((error as any).status);

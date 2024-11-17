@@ -29,7 +29,7 @@ class FoodItemService {
         isListed: data.isListed,
         restaurant: {
           connect: {
-            id: data.restaurant,
+            slug: data.slug,
           },
         },
       },
@@ -40,9 +40,14 @@ class FoodItemService {
     return foodItem;
   };
 
-  // get all food items
-  getAllFoodItems = async () => {
+  // get all food items of the restaurant using slug
+  getAllFoodItems = async (slug: string) => {
     const foodItems = await prisma.foodItem.findMany({
+      where: {
+        restaurant: {
+          slug: slug,
+        },
+      },
       include: {
         OrderItem: true,
       },
@@ -50,11 +55,14 @@ class FoodItemService {
     return foodItems;
   };
 
-  // get a food item by id
-  getFoodItemById = async (id: string) => {
+  // get a food item by id of specific restaurant
+  getFoodItemById = async (id: string, slug: string) => {
     const foodItem = await prisma.foodItem.findUnique({
       where: {
         id: id,
+        restaurant: {
+          slug: slug,
+        },
       },
       include: {
         OrderItem: true,
@@ -63,11 +71,14 @@ class FoodItemService {
     return foodItem;
   };
 
-  // update a food item
+  // update a food item of specified restaurant
   updateFoodItem = async (id: string, data: UpdateFoodItemDto) => {
     const foodItem = await prisma.foodItem.update({
       where: {
         id: id,
+        restaurant: {
+          slug: data.slug,
+        },
       },
       data: {
         name: data.name,
@@ -79,11 +90,18 @@ class FoodItemService {
     return foodItem;
   };
 
-  // update a status of the food item
-  updateFoodItemStatus = async (id: string, isListed: boolean) => {
+  // update a list status of the food item of specific restaurant
+  updateFoodItemStatus = async (
+    id: string,
+    isListed: boolean,
+    slug: string
+  ) => {
     const foodItem = await prisma.foodItem.update({
       where: {
         id: id,
+        restaurant: {
+          slug: slug,
+        },
       },
       data: {
         isListed: isListed,
@@ -92,11 +110,14 @@ class FoodItemService {
     return foodItem;
   };
 
-  // delete a food item
-  deleteFoodItem = async (id: string) => {
+  // delete a food item of specified restaurant
+  deleteFoodItem = async (id: string, slug: string) => {
     const foodItem = await prisma.foodItem.update({
       where: {
         id: id,
+        restaurant: {
+          slug: slug,
+        },
       },
       data: {
         isDeleted: true,
