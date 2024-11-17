@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 // contexts
 import { useCart } from "../context/cart-context";
+import { useParams } from "next/navigation";
 
 interface CartSidebarProps {
   children?: React.ReactNode;
@@ -25,6 +26,7 @@ interface CartSidebarProps {
 const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
   const { filteredCartItems, updateItemFromCart } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const { slug } = useParams();
 
   const totalAmount = filteredCartItems.reduce(
     (sum, item) => sum + Number(item.price) * item.quantity,
@@ -40,7 +42,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
       return;
     }
     // Navigate to checkout page
-    window.location.href = "/user/checkout";
+    window.location.href = `/${slug}/user/checkout`;
   };
 
   return (

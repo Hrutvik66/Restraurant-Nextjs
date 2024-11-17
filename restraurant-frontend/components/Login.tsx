@@ -46,7 +46,7 @@ const LoginPage = ({ role }: { role: string }) => {
     useState(false);
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const router = useRouter();
-  const { apiCall } = useApiCall();
+  const { makeRequest } = useApiCall();
   const { slug } = useParams();
   const { login } = useAuthContext();
 
@@ -55,9 +55,16 @@ const LoginPage = ({ role }: { role: string }) => {
     setIsLoading(true);
     setError("");
     try {
-      const response = await apiCall("/api/owner/login", "POST", {
-        email,
-        password,
+      const response = await makeRequest({
+        url: "/api/owner/login",
+        method: "POST",
+        data: {
+          email,
+          password,
+        },
+        params: {
+          slug,
+        },
       });
       console.log("response", response);
 
