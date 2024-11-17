@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import axios from "axios";
 // shadcn components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 // context
 import { useCart } from "@/context/cart-context";
+import useApiCall from "@/hooks/use-apicall";
+import { useParams } from "next/navigation";
 
 interface Order {
   name: string;
@@ -19,6 +20,8 @@ interface Order {
 
 const CheckoutPage = () => {
   const { cartItems, filteredCartItems } = useCart();
+  const { makeRequest } = useApiCall();
+  const { slug } = useParams();
   const [order, setOrder] = useState<Order>({
     name: "",
   });
@@ -37,15 +40,19 @@ const CheckoutPage = () => {
   const handlePayment = async () => {
     try {
       setLoading(true);
-      const orderData = await axios.post(
-        "http://localhost:3001/api/payment/initiate",
-        {
+      const orderData = await makeRequest({
+        url: "/api/payment/initiate",
+        method: "POST",
+        data: {
           MUID: "MUID" + Date.now(),
           name: order.name,
           amount: totalAmount + 2,
           orderItems: cartItems,
-        }
-      );
+        },
+        params: {
+          slug,
+        },
+      });
       if (orderData.status === 200) {
         setLoading(false);
         window.location.href =

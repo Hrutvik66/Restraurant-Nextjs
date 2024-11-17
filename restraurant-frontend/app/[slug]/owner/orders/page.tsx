@@ -43,6 +43,8 @@ import useApiCall from "@/hooks/use-apicall";
 import { useSocket } from "@/context/socket-context";
 import CustomErrorInterface from "../../../../lib/CustomErrorInterface";
 import Cookies from "js-cookie";
+import { useParams } from "next/navigation";
+import Loader from "@/components/Loader";
 
 interface Order {
   id: string;
@@ -128,7 +130,7 @@ const OrderDetails = ({
 
 const AdminOrdersPage = () => {
   const { apiData, setRefreshKey } = useFetch("/api/order/");
-  const { apiCall } = useApiCall();
+  const { makeRequest, loading } = useApiCall();
   const socket = useSocket();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
@@ -136,6 +138,7 @@ const AdminOrdersPage = () => {
   const [statusFilter, setStatusFilter] = useState("New");
   const [transactionStatusFilter, setTransactionStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(new Date());
+  const { slug } = useParams();
 
   useEffect(() => {
     if (socket) {
@@ -277,14 +280,19 @@ const AdminOrdersPage = () => {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
       const token = Cookies.get("token");
-      const response = await apiCall(
-        `/api/order/${orderId}`,
-        "PUT",
-        {
+      const response = await makeRequest({
+        url: `/api/order/${orderId}`,
+        method: "PUT",
+        data: {
           status: newStatus,
         },
-        token
-      );
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          slug,
+        },
+      });
       if (response && response.status === 200) {
         setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
         toast({
@@ -317,204 +325,212 @@ const AdminOrdersPage = () => {
       <h1 className="text-3xl font-bold mb-6 text-orange-600">
         Order Management
       </h1>
-      <div className="mb-6 flex flex-wrap gap-4">
-        <Select onValueChange={setStatusFilter} value={statusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Statuses</SelectItem>
-            <SelectItem value="New">New</SelectItem>
-            <SelectItem value="Completed">Completed</SelectItem>
-            <SelectItem value="Cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          onValueChange={setTransactionStatusFilter}
-          value={transactionStatusFilter}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by Transaction" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All Transactions</SelectItem>
-            <SelectItem value="Paid">Paid</SelectItem>
-            <SelectItem value="Pending">Pending</SelectItem>
-            <SelectItem value="Failed">Failed</SelectItem>
-          </SelectContent>
-        </Select>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className={`w-[280px] justify-start text-left font-normal ${
-                !dateFilter && "text-muted-foreground"
-              }`}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateFilter ? (
-                format(dateFilter, "PPP")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={dateFilter}
-              onSelect={setDateFilter}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-      {filteredOrders.length === 0 ? (
-        <NoOrdersMessage />
+      {loading ? (
+        <Loader info="Fetching orders" />
       ) : (
-        <>
-          <div className="grid gap-4 md:hidden">
-            {filteredOrders.map((order, index) => (
-              <Card key={order.id}>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span>Order #{index + 1}</span>
-                    <Badge
-                      className={`${getStatusColor(order.status)} text-white`}
-                    >
-                      {order.status}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p>
-                    <strong>Customer:</strong> {order.customer}
-                  </p>
-                  <p>
-                    <strong>Date:</strong> {order.date}
-                  </p>
-                  <p>
-                    <strong>Time:</strong> {order.time}
-                  </p>
-                  <p>
-                    <strong>Total:</strong> ₹{order.total}
-                  </p>
-                  <p>
-                    <strong>Transaction Status:</strong>
-                    <Badge
-                      className={`${getTransactionStatusColor(
-                        order.transactionStatus
-                      )} text-white ml-2`}
-                    >
-                      {order.transactionStatus}
-                    </Badge>
-                  </p>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full mt-4"
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        View Details
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-full md:max-w-3xl">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-orange-600 mb-4">
-                          Order Details
-                        </DialogTitle>
-                      </DialogHeader>
-                      {selectedOrder && (
-                        <OrderDetails
-                          order={selectedOrder}
-                          onStatusChange={handleStatusChange}
-                        />
-                      )}
-                    </DialogContent>
-                  </Dialog>
+        <div>
+          <div className="mb-6 flex flex-wrap gap-4">
+            <Select onValueChange={setStatusFilter} value={statusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Statuses</SelectItem>
+                <SelectItem value="New">New</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              onValueChange={setTransactionStatusFilter}
+              value={transactionStatusFilter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Transaction" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Transactions</SelectItem>
+                <SelectItem value="Paid">Paid</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+                <SelectItem value="Failed">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={`w-[280px] justify-start text-left font-normal ${
+                    !dateFilter && "text-muted-foreground"
+                  }`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFilter ? (
+                    format(dateFilter, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={dateFilter}
+                  onSelect={setDateFilter}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          {filteredOrders.length === 0 ? (
+            <NoOrdersMessage />
+          ) : (
+            <>
+              <div className="grid gap-4 md:hidden">
+                {filteredOrders.map((order, index) => (
+                  <Card key={order.id}>
+                    <CardHeader>
+                      <CardTitle className="flex justify-between items-center">
+                        <span>Order #{index + 1}</span>
+                        <Badge
+                          className={`${getStatusColor(
+                            order.status
+                          )} text-white`}
+                        >
+                          {order.status}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>
+                        <strong>Customer:</strong> {order.customer}
+                      </p>
+                      <p>
+                        <strong>Date:</strong> {order.date}
+                      </p>
+                      <p>
+                        <strong>Time:</strong> {order.time}
+                      </p>
+                      <p>
+                        <strong>Total:</strong> ₹{order.total}
+                      </p>
+                      <p>
+                        <strong>Transaction Status:</strong>
+                        <Badge
+                          className={`${getTransactionStatusColor(
+                            order.transactionStatus
+                          )} text-white ml-2`}
+                        >
+                          {order.transactionStatus}
+                        </Badge>
+                      </p>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full mt-4"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            View Details
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-full md:max-w-3xl">
+                          <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold text-orange-600 mb-4">
+                              Order Details
+                            </DialogTitle>
+                          </DialogHeader>
+                          {selectedOrder && (
+                            <OrderDetails
+                              order={selectedOrder}
+                              onStatusChange={handleStatusChange}
+                            />
+                          )}
+                        </DialogContent>
+                      </Dialog>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <Card className="hidden md:block">
+                <CardContent className="p-6">
+                  <ScrollArea className="h-[calc(100vh-250px)]">
+                    <Table>
+                      <TableCaption>A list of recent food orders.</TableCaption>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Order ID</TableHead>
+                          <TableHead>Customer</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Transaction Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.map((order, index) => (
+                          <TableRow key={order.id}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>{order.customer}</TableCell>
+                            <TableCell>{order.date}</TableCell>
+                            <TableCell>{order.time}</TableCell>
+                            <TableCell className="text-right">
+                              ₹{order.total}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`${getStatusColor(
+                                  order.status
+                                )} text-white`}
+                              >
+                                {order.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={`${getTransactionStatusColor(
+                                  order.transactionStatus
+                                )} text-white`}
+                              >
+                                {order.transactionStatus}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setSelectedOrder(order)}
+                                  >
+                                    View Details
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-3xl">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-2xl font-bold text-orange-600 mb-4">
+                                      Order Details
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  {selectedOrder && (
+                                    <OrderDetails
+                                      order={selectedOrder}
+                                      onStatusChange={handleStatusChange}
+                                    />
+                                  )}
+                                </DialogContent>
+                              </Dialog>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-          <Card className="hidden md:block">
-            <CardContent className="p-6">
-              <ScrollArea className="h-[calc(100vh-250px)]">
-                <Table>
-                  <TableCaption>A list of recent food orders.</TableCaption>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Time</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Transaction Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredOrders.map((order, index) => (
-                      <TableRow key={order.id}>
-                        <TableCell>{index + 1}</TableCell>
-                        <TableCell>{order.customer}</TableCell>
-                        <TableCell>{order.date}</TableCell>
-                        <TableCell>{order.time}</TableCell>
-                        <TableCell className="text-right">
-                          ₹{order.total}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={`${getStatusColor(
-                              order.status
-                            )} text-white`}
-                          >
-                            {order.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={`${getTransactionStatusColor(
-                              order.transactionStatus
-                            )} text-white`}
-                          >
-                            {order.transactionStatus}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                onClick={() => setSelectedOrder(order)}
-                              >
-                                View Details
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-3xl">
-                              <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-orange-600 mb-4">
-                                  Order Details
-                                </DialogTitle>
-                              </DialogHeader>
-                              {selectedOrder && (
-                                <OrderDetails
-                                  order={selectedOrder}
-                                  onStatusChange={handleStatusChange}
-                                />
-                              )}
-                            </DialogContent>
-                          </Dialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

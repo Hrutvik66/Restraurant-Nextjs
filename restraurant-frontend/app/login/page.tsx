@@ -1,28 +1,24 @@
 "use client";
-import Loader from "@/components/Loader";
 import LoginPage from "@/components/Login";
 // Auth context
 import { useAuthContext } from "@/context/auth-context";
 // next
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
+import AdminLayout from "../page";
 
 const OwnerLogin = () => {
-  const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const { user } = useAuthContext();
   const router = useRouter();
   const { slug } = useParams();
 
-  if (isAuthLoading) {
-    return <Loader info="Authenticating..." />;
-  }
-
-  if (isAuthenticated) {
+  if (user) {
     router.push(`/${slug}/owner/analytics`);
   }
   return (
-    <div>
+    <AdminLayout>
       <LoginPage role="Owner" />;
-    </div>
+    </AdminLayout>
   );
 };
 

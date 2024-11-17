@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,6 +32,7 @@ const TransactionResultPage = () => {
     amount: number;
     date: Date;
   } | null>(null);
+  const { slug } = useParams();
   const transactionId = searchParams.get("transactionId");
   console.log(transactionId, "transactionId");
 
@@ -76,7 +77,7 @@ const TransactionResultPage = () => {
   }, [setCartRefreshKey, transactionId]);
 
   const handleBackToMenu = () => {
-    router.push("/user/menu");
+    router.push(`/${slug}/user/menu`);
   };
 
   if (loading) {
