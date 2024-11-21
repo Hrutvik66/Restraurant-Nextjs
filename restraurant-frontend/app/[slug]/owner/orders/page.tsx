@@ -43,8 +43,9 @@ import useApiCall from "@/hooks/use-apicall";
 import { useSocket } from "@/context/socket-context";
 import CustomErrorInterface from "../../../../lib/CustomErrorInterface";
 import Cookies from "js-cookie";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
+import { useAuthContext } from "@/context/auth-context";
 
 interface Order {
   id: string;
@@ -64,16 +65,18 @@ interface Order {
 const OrderDetails = ({
   order,
   onStatusChange,
+  orderId,
 }: {
   order: Order;
   onStatusChange: (orderId: string, newStatus: string) => void;
+  orderId: string;
 }) => (
   <Card className="w-full max-w-3xl mx-auto">
     <CardContent className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div>
           <h3 className="text-lg font-semibold text-gray-700">Order Details</h3>
-          <p className="text-sm text-gray-600">Order ID: {order.id}</p>
+          <p className="text-sm text-gray-600">Order ID: {orderId}</p>
           <p className="text-sm text-gray-600">Customer: {order.customer}</p>
           <p className="text-sm text-gray-600">Date: {order.date}</p>
           <p className="text-sm text-gray-600">Time: {order.time}</p>
@@ -128,8 +131,9 @@ const OrderDetails = ({
   </Card>
 );
 
-const AdminOrdersPage = () => {
-  const { apiData, setRefreshKey } = useFetch("/api/order/");
+const OrdersPage = () => {
+  const { slug } = useParams();
+  const { apiData, setRefreshKey } = useFetch(`/api/order/?slug=${slug}`);
   const { makeRequest, loading } = useApiCall();
   const socket = useSocket();
   const [orders, setOrders] = useState<Order[]>([]);
@@ -138,7 +142,9 @@ const AdminOrdersPage = () => {
   const [statusFilter, setStatusFilter] = useState("New");
   const [transactionStatusFilter, setTransactionStatusFilter] = useState("All");
   const [dateFilter, setDateFilter] = useState<Date | undefined>(new Date());
-  const { slug } = useParams();
+
+  const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const router = useRouter();
 
   useEffect(() => {
     if (socket) {
@@ -174,6 +180,13 @@ const AdminOrdersPage = () => {
 
   console.log("order", orders);
   console.log("filtered orders", filteredOrders);
+
+  // auth check useEffect
+  useEffect(() => {
+    if (!isAuthenticated && !isAuthLoading) {
+      router.push(`/${slug}/owner/`);
+    }
+  }, [isAuthenticated, slug, router, isAuthLoading]);
 
   const transformOrdersData = useCallback((orders: any[]): Order[] => {
     return orders.map((order) => formatOrder(order));
@@ -320,6 +333,10 @@ const AdminOrdersPage = () => {
     </Card>
   );
 
+  if (isAuthLoading) {
+    return <Loader info="Authenticating..." />;
+  }
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6 text-orange-600">
@@ -443,6 +460,7 @@ const AdminOrdersPage = () => {
                             <OrderDetails
                               order={selectedOrder}
                               onStatusChange={handleStatusChange}
+                              orderId={(index + 1).toString()}
                             />
                           )}
                         </DialogContent>
@@ -536,4 +554,4 @@ const AdminOrdersPage = () => {
   );
 };
 
-export default AdminOrdersPage;
+export default OrdersPage;

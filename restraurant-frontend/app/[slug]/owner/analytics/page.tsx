@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -14,6 +14,8 @@ import {
 } from "recharts";
 import { useAuthContext } from "@/context/auth-context";
 import InfoCard from "@/components/InfoCard";
+import { useParams, useRouter } from "next/navigation";
+import Loader from "@/components/Loader";
 
 const salesData = [
   { name: "Mon", sales: 4000 },
@@ -34,7 +36,20 @@ const topSellingItems = [
 ];
 
 const AdminAnalytics = () => {
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const { slug } = useParams();
+  const router = useRouter();
+
+  // auth check useEffect
+  useEffect(() => {
+    if (!isAuthenticated && !isAuthLoading) {
+      router.push(`/${slug}/owner/`);
+    }
+  }, [isAuthenticated, slug, router, isAuthLoading]);
+
+  if (isAuthLoading) {
+    return <Loader info="Authenticating..." />;
+  }
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Analytics Dashboard</h1>

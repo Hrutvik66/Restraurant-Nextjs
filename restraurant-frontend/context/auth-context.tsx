@@ -2,12 +2,12 @@
 import { createContext, useState, useEffect, useContext } from "react";
 // js-cookie
 import Cookies from "js-cookie";
-// axios
-import axios from "axios";
 // toast
 import { toast } from "@/hooks/use-toast";
 // Custom Error Interface
 import CustomErrorInterface from "../lib/CustomErrorInterface";
+import { useParams } from "next/navigation";
+import useApiCall from "@/hooks/use-apicall";
 
 interface UserType {
   email: string;
@@ -59,6 +59,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<UserType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
+  const { slug } = useParams();
+  const { makeRequest } = useApiCall();
 
   useEffect(() => {
     /**
@@ -72,11 +74,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setIsAuthLoading(true);
         const token = Cookies.get("token");
-        console.log("token", token);
-        const URL = `${process.env.NEXT_PUBLIC_URL}/api/${role}/id`;
-        const response = await axios.get(URL, {
+        const response = await makeRequest({
+          url: `/api/${role}/id`,
+          method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
+          },
+          params: {
+            slug,
           },
         });
         if (response && response.status === 200) {
@@ -90,6 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err) {
         const error = err as CustomErrorInterface;
+        logout();
         toast({
           variant: "destructive",
           title: error.response.data.message,
@@ -100,7 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     };
     fetchUser("owner");
-  }, []);
+  }, [makeRequest, slug]);
 
   const logout = () => {
     setUser(null);
