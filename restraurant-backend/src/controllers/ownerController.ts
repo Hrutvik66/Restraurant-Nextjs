@@ -114,7 +114,8 @@ class OwnerController {
       }
       const updatedOwner = await toggleRestaurantOpen(
         req.params.id,
-        req.body.isOpen
+        req.body.isOpen,
+        req.query.slug as string
       );
       res.status(200).json(updatedOwner);
     } catch (error) {

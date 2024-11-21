@@ -71,6 +71,9 @@ class OrderService {
           lt: transaction.order.createdAt,
           gte: orderDate, // Orders on the same day
         },
+        restaurant: {
+          slug: slug,
+        },
       },
     });
 
@@ -99,6 +102,7 @@ class OrderService {
           },
         },
         transaction: true,
+        restaurant: true,
       },
     });
 
