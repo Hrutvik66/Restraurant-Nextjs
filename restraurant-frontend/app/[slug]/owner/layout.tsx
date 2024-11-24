@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -49,6 +49,10 @@ const Sidebar = ({
     { href: `/${slug}/owner/orders`, label: "Orders", icon: Settings },
   ];
 
+  useEffect(() => {
+    localStorage.setItem("pathname", pathname);
+  }, [pathname]);
+
   const handleLogout = () => {
     if (logout) {
       logout();
@@ -73,7 +77,7 @@ const Sidebar = ({
         </div>
         {/* Side bar menu items */}
         {isAuthenticated && (
-          <nav className="flex flex-col justify-between items-start">
+          <nav className="flex-grow">
             <ul className={`${collapsed ? "" : "space-y-2"} px-2 w-full`}>
               {navItems.map((item) => (
                 <li key={item.href}>

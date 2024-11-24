@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err) {
         const error = err as CustomErrorInterface;
-        logout();
+        // logout();
         toast({
           variant: "destructive",
           title: error.response.data.message,

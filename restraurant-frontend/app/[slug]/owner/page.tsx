@@ -17,7 +17,13 @@ const OwnerLogin = () => {
   }
 
   if (isAuthenticated) {
-    router.push(`/${slug}/owner/analytics`);
+    let last_visted =
+      localStorage.getItem("pathname") ?? `/${slug}/owner/analytics`;
+    if (last_visted === `/${slug}/owner`) {
+      last_visted = `/${slug}/owner/analytics`;
+      localStorage.setItem("pathname", last_visted);
+    }
+    router.push(last_visted);
   }
   return (
     <div>

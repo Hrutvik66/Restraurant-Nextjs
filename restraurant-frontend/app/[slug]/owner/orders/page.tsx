@@ -534,6 +534,7 @@ const OrdersPage = () => {
                                     <OrderDetails
                                       order={selectedOrder}
                                       onStatusChange={handleStatusChange}
+                                      orderId={(index + 1).toString()}
                                     />
                                   )}
                                 </DialogContent>

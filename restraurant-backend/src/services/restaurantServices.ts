@@ -6,6 +6,7 @@ class RestaurantService {
     return prisma.restaurant.findMany({
       include: {
         foodItems: true,
+        owner: true,
       },
     });
   }
