@@ -170,45 +170,45 @@ const AdminOrdersPage = () => {
   console.log("order", orders);
   console.log("filtered orders", filteredOrders);
 
-  const transformOrdersData = (orders: any[]): Order[] => {
-    return orders.map((order) => {
-      return formatOrder(order);
-    });
-  };
+  // const transformOrdersData = (orders: any[]): Order[] => {
+  //   return orders.map((order) => {
+  //     return formatOrder(order);
+  //   });
+  // };
 
-  const formatOrder = (order: any) => {
-    const total = order.orderItems.reduce(
-      (sum: number, item: any) => sum + item.foodItem.price * item.quantity,
-      0
-    );
+  // const formatOrder = (order: any) => {
+  //   const total = order.orderItems.reduce(
+  //     (sum: number, item: any) => sum + item.foodItem.price * item.quantity,
+  //     0
+  //   );
 
-    const transactionStatus =
-      order.transaction[0].status === "success" ? "Paid" : "Pending";
+  //   const transactionStatus =
+  //     order.transaction[0].status === "success" ? "Paid" : "Pending";
 
-    const createdAt = new Date(order.createdAt);
-    const date = createdAt.toISOString().split("T")[0];
-    const time = createdAt.toISOString().split("T")[1].slice(0, 5);
+  //   const createdAt = new Date(order.createdAt);
+  //   const date = createdAt.toISOString().split("T")[0];
+  //   const time = createdAt.toISOString().split("T")[1].slice(0, 5);
 
-    return {
-      id: order.id,
-      customer: order.customerName,
-      items: order.orderItems.map((item: any) => ({
-        name: item.foodItem.name,
-        quantity: item.quantity,
-        price: parseFloat(item.foodItem.price),
-      })),
-      total: total,
-      status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
-      transactionStatus: transactionStatus,
-      date: date,
-      time: time,
-    };
-  };
+  //   return {
+  //     id: order.id,
+  //     customer: order.customerName,
+  //     items: order.orderItems.map((item: any) => ({
+  //       name: item.foodItem.name,
+  //       quantity: item.quantity,
+  //       price: parseFloat(item.foodItem.price),
+  //     })),
+  //     total: total,
+  //     status: order.status.charAt(0).toUpperCase() + order.status.slice(1),
+  //     transactionStatus: transactionStatus,
+  //     date: date,
+  //     time: time,
+  //   };
+  // };
 
   useEffect(() => {
     const fetchData = () => {
-      const data = transformOrdersData(apiData ?? []);
-      setOrders(data);
+      // const data = transformOrdersData(apiData ?? []);
+      // setOrders(data);
     };
 
     fetchData();
@@ -269,7 +269,6 @@ const AdminOrdersPage = () => {
     } catch (error) {
       toast({
         title: "Failed to Update Order Status",
-        description: error.message,
       });
     }
   };
