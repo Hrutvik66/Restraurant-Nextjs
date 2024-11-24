@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,24 +15,24 @@ import axios from "axios";
 import Loader from "@/components/Loader";
 // context
 import { useCart } from "@/context/cart-context";
+import useApiCall from "@/hooks/use-apicall";
 
 const TransactionResultPage = () => {
   // router
   const router = useRouter();
-
   // context
   const { setCartRefreshKey } = useCart();
   // search params
   const searchParams = useSearchParams();
-  // states
-  const [loading, setLoading] = useState(true);
   const [transactionResult, setTransactionResult] = useState<{
     success: boolean;
     orderId: string;
     amount: number;
     date: Date;
   } | null>(null);
+  const { slug } = useParams();
   const transactionId = searchParams.get("transactionId");
+  const { makeRequest, loading } = useApiCall();
   console.log(transactionId, "transactionId");
 
   useEffect(() => {
@@ -44,9 +44,13 @@ const TransactionResultPage = () => {
           amount: 0,
           date: new Date(),
         };
-        const response = await axios.get(
-          `http://localhost:3001/api/order/transaction/${transactionId}`
-        );
+        const response = await makeRequest({
+          url: `/api/order/transaction/${transactionId}`,
+          method: "GET",
+          params: {
+            slug,
+          },
+        });
         console.log("data_order", response);
         if (response.status === 200) {
           result = {
@@ -55,7 +59,9 @@ const TransactionResultPage = () => {
             amount: Number(response.data.transaction.amount),
             date: new Date(response.data.transaction.order.createdAt),
           };
+          setTransactionResult(result);
           // make cart array empty from local storage
+          // FIXME: site is not updating the cart untill refreshed
           localStorage.removeItem("cart");
           setCartRefreshKey((prevKey) => (prevKey + 1) % 10);
         }
@@ -65,18 +71,12 @@ const TransactionResultPage = () => {
       }
     };
     if (transactionId) {
-      fetchTransactionResult(transactionId).then((result) => {
-        setTransactionResult(result ?? null);
-        setLoading(false);
-      });
-    } else {
-      // Handle case where transactionId is not provided
-      setLoading(false);
+      fetchTransactionResult(transactionId);
     }
-  }, [setCartRefreshKey, transactionId]);
+  }, [makeRequest, setCartRefreshKey, slug, transactionId]);
 
   const handleBackToMenu = () => {
-    router.push("/user/menu");
+    router.push(`/${slug}/user/menu`);
   };
 
   if (loading) {

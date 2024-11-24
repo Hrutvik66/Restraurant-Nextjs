@@ -8,6 +8,7 @@ import prisma from "../prisma/client";
 import OrderService from "../services/orderServices";
 // socket io
 import { io } from "../index";
+import restaurantServices from "../services/restaurantServices";
 
 // order interface
 interface OrderItem {
@@ -61,6 +62,16 @@ class PaymentController {
       const expirationTime = new Date();
       expirationTime.setMinutes(expirationTime.getMinutes() + 15);
 
+      // get restaurant using slug
+      const restaurant = await restaurantServices.getRestaurantBySlug(
+        req.query.slug as string
+      );
+
+      // check if restaurant is available
+      if (!restaurant) {
+        throw new Error("Restaurant not found");
+      }
+
       // Create Order in Database (pending/initiated status)
       const order = await prisma.order.create({
         data: {
@@ -75,7 +86,13 @@ class PaymentController {
               })),
             },
           },
+          restaurant: {
+            connect: {
+              slug: req.query.slug as string,
+            },
+          },
         },
+
         include: {
           orderItems: true,
         },
@@ -88,6 +105,7 @@ class PaymentController {
           merchantTransactionId: merchantTransactionId,
           amount: req.body.amount,
           status: "pending", // Initially 'pending'
+          restaurantId: restaurant?.id,
         },
       });
 
@@ -155,18 +173,22 @@ class PaymentController {
           // Update order status to 'completed'
           // get order by transaction id
           const order = await OrderService.getOrderByTransactionId(
-            response.data.data.merchantTransactionId
+            response.data.data.merchantTransactionId,
+            req.query.slug as string
           );
           const updatedOrder = await prisma.order.update({
             where: { id: order.transaction.order.id },
             data: { status: "New" },
+            include: {
+              restaurant: true,
+            },
           });
 
           // Emit event to update clients in real-time
           io.emit("orderStatusUpdated", updatedOrder); // Notify all clients of the status change
 
           res.redirect(
-            `http://localhost:3000/user/checkout/payment-status?transactionId=${merchantTransactionId}`
+            `http://localhost:3000/${updatedOrder.restaurant.slug}/user/checkout/payment-status?transactionId=${merchantTransactionId}`
           );
         } else {
           // Handle failed transaction
@@ -179,7 +201,8 @@ class PaymentController {
           // Update order status to 'completed'
           // get order by transaction id
           const order = await OrderService.getOrderByTransactionId(
-            response.data.data.merchantTransactionId
+            response.data.data.merchantTransactionId,
+            req.query.slug as string
           );
           const updatedOrder = await prisma.order.update({
             where: { id: order.transaction.order.id },

@@ -17,16 +17,15 @@ import http from "http";
 import { Server } from "socket.io";
 
 // import routes
-import userRouter from "./routes/userRoutes";
 import testRouter from "./routes/testRoute";
 import foodRouter from "./routes/foodRoute";
 import orderRouter from "./routes/orderRoute";
-import cartRouter from "./routes/cartRoutes";
+// import cartRouter from "./routes/cartRoutes";
 import paymentRouter from "./routes/paymentRoutes";
-import analyticsRouter from "./routes/analyticsRoute";
-
-// session
-import sessionMiddleware from "./middleware/session.middleware";
+// import analyticsRouter from "./routes/analyticsRoute";
+import adminRouter from "./routes/adminRoutes";
+import ownerRouter from "./routes/ownerRoutes";
+import restaurantRouter from "./routes/restaurantRoutes";
 
 const app: Application = express();
 
@@ -41,8 +40,6 @@ app.use(
 );
 // cookie parser middleware
 app.use(cookieParser());
-// redis + express-session middleware
-app.use(sessionMiddleware);
 // body-parser middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 // cors middleware
@@ -53,18 +50,22 @@ dotenv.config();
 //? routes
 // 1. test route
 app.use("/api/", testRouter);
-// 2. user route
-app.use("/api/user", userRouter);
+// 2. owner route
+app.use("/api/owner", ownerRouter);
 // 3. food route
 app.use("/api/food", foodRouter);
 // 4. Order route
 app.use("/api/order", orderRouter);
-// 5. Cart route
-app.use("/api/cart", cartRouter);
+// // 5. Cart route
+// app.use("/api/cart", cartRouter);
 // 6. payment route
 app.use("/api/payment", paymentRouter);
-// 7. admin analytics route
-app.use("/api/admin", analyticsRouter);
+// // 7. owner analytics route
+// app.use("/api/owner", analyticsRouter);
+// 8. admin route
+app.use("/api/admin", adminRouter);
+// 9. restaurant route
+app.use("/api/restaurant", restaurantRouter);
 
 // port number
 const port: number = 3001;

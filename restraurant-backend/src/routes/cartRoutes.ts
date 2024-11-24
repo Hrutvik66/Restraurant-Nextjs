@@ -1,14 +1,14 @@
-// Router
-import { Router } from "express";
+// // Router
+// import { Router } from "express";
 
-const cartRouter = Router();
+// const cartRouter = Router();
 
-// import controllers
-import cart from "../controllers/cartController";
+// // import controllers
+// import cart from "../controllers/cartController";
 
-const { addCart, getCart } = cart;
+// const { addCart, getCart } = cart;
 
-cartRouter.post("/", addCart);
-cartRouter.get("/", getCart);
+// cartRouter.post("/", addCart);
+// cartRouter.get("/", getCart);
 
-export default cartRouter;
+// export default cartRouter;

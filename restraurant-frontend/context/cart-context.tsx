@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from "react";
 // food-context
-import { useFood } from "./food-context";
+import { useRestaurantContext } from "./restaurant-context";
 
 interface CartItem {
   itemId: string;
@@ -22,7 +22,6 @@ interface FilteredItem {
   quantity: number;
   isListed: boolean;
   isDeleted: boolean;
-  OrderItem: object[];
 }
 
 interface CartContextType {
@@ -42,7 +41,7 @@ const CartContext = createContext<CartContextType>({
 });
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { foodItems } = useFood();
+  const { restaurantData } = useRestaurantContext();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [filteredCartItems, setFilteredCartItems] = useState<FilteredItem[]>(
     []
@@ -58,10 +57,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Filter food items based on what's in the cart
   useEffect(() => {
-    if (foodItems && cartItems.length > 0) {
+    if (restaurantData?.foodItems && cartItems.length > 0) {
       const filteredItems = cartItems
         .map((cartItem) => {
-          const foodItem = foodItems.find((item) => item.id == cartItem.itemId);
+          const foodItem = restaurantData?.foodItems.find(
+            (item) => item.id == cartItem.itemId
+          );
           if (foodItem) {
             if (!foodItem.isDeleted && foodItem.isListed) {
               return {
@@ -83,7 +84,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       setFilteredCartItems(filteredItems);
     }
-  }, [foodItems, cartItems, cartRefreshKey]);
+  }, [restaurantData, cartItems, cartRefreshKey]);
 
   const addItemToCart = async (itemId: string) => {
     const existingItem = cartItems.find((item) => item.itemId === itemId);

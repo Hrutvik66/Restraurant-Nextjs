@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 // Providers
-import { Providers } from "../providers";
+import { Providers } from "../../providers";
 import { Toaster } from "@/components/ui/toaster";
 import MobileCartButton from "@/components/MobileCartButton";
 import Navbar from "@/components/Navbar";

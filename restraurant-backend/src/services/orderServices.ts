@@ -6,12 +6,16 @@ import prisma from "../prisma/client";
 import dayjs from "dayjs";
 
 class OrderService {
-  // get an order by id
-  getOrderById = async (id: string) => {
+  // get an order by id of specific restaurant
+  getOrderById = async (id: string, slug: string) => {
     const order = await prisma.order.findUnique({
       where: {
-        id: id,
+        id,
+        restaurant: {
+          slug: slug,
+        },
       },
+
       include: {
         orderItems: {
           include: {
@@ -24,11 +28,17 @@ class OrderService {
   };
 
   // Get order by transaction ID and calculate order number for the day
-  getOrderByTransactionId = async (merchantTransactionId: string) => {
+  getOrderByTransactionId = async (
+    merchantTransactionId: string,
+    slug: string
+  ) => {
     // Find the transaction by merchantTransactionId
     const transaction = await prisma.transaction.findUnique({
       where: {
         merchantTransactionId: merchantTransactionId,
+        restaurant: {
+          slug: slug,
+        },
       },
       include: {
         order: {
@@ -61,6 +71,9 @@ class OrderService {
           lt: transaction.order.createdAt,
           gte: orderDate, // Orders on the same day
         },
+        restaurant: {
+          slug: slug,
+        },
       },
     });
 
@@ -74,9 +87,14 @@ class OrderService {
     };
   };
 
-  // get all orders
-  getAllOrders = async () => {
+  // get all orders of restaurant
+  getAllOrders = async (slug: string) => {
     const orders = await prisma.order.findMany({
+      where: {
+        restaurant: {
+          slug: slug,
+        },
+      },
       include: {
         orderItems: {
           include: {
@@ -84,6 +102,7 @@ class OrderService {
           },
         },
         transaction: true,
+        restaurant: true,
       },
     });
 
@@ -92,11 +111,14 @@ class OrderService {
     return orders; // Return the associated order
   };
 
-  // update an order by status
-  updateOrderStatus = async (id: string, status: string) => {
+  // update order status of the order in specific restaurant
+  updateOrderStatus = async (id: string, status: string, slug: string) => {
     const order = await prisma.order.update({
       where: {
         id: id,
+        restaurant: {
+          slug: slug,
+        },
       },
       data: {
         status: status,
