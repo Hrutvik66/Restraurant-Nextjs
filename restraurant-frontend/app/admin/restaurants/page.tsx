@@ -128,8 +128,25 @@ export default function RestaurantsPage() {
     }
   }, [isAuthenticated, router, isAuthLoading]);
 
+  /**
+   * Takes an array of restaurants and transforms them into the `Restaurant` type
+   * @param {Array<{id: string, name: string, location: string, owner: {name: string, email: string}, isOpen: boolean, allowService: boolean}>} restaurants
+   * @returns {Array<Restaurant>}
+   */
   const transformRestaurantsData = useCallback(
-    (restaurants: any[]): Restaurant[] => {
+    (
+      restaurants: Array<{
+        id: string;
+        name: string;
+        location: string;
+        owner: {
+          name: string;
+          email: string;
+        };
+        isOpen: boolean;
+        allowService: boolean;
+      }>
+    ): Restaurant[] => {
       return restaurants.map((restaurant) => ({
         id: restaurant.id,
         name: restaurant.name,

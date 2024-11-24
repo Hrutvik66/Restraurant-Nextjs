@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CheckCircle2, XCircle } from "lucide-react";
-import axios from "axios";
 import Loader from "@/components/Loader";
 // context
 import { useCart } from "@/context/cart-context";
