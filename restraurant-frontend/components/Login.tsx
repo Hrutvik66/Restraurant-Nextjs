@@ -56,7 +56,7 @@ const LoginPage = ({ role }: { role: string }) => {
     setError("");
     try {
       const response = await makeRequest({
-        url: "/api/owner/login",
+        url: `/api/${role.toLowerCase()}/login`,
         method: "POST",
         data: {
           email,
@@ -76,7 +76,11 @@ const LoginPage = ({ role }: { role: string }) => {
           title: "Login Successful",
           description: response.data.message,
         });
-        router.push(`/${slug}/owner/analytics`);
+        if (role === "Owner") {
+          router.push(`/${slug}/owner/analytics`);
+        } else if (role === "Admin") {
+          router.push(`admin/restaurants`);
+        }
       }
     } catch (err) {
       const error = err as CustomErrorInterface;
