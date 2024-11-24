@@ -6,7 +6,7 @@
   "scripts": {
     "start:dev": "npx nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js"
   },
   "author": "Hrutvik",
