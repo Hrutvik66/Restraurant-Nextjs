@@ -145,6 +145,24 @@ const OrdersPage = () => {
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
+  console.log(apiData);
+
+  interface APIType {
+    id: string;
+    customerName: string;
+    orderItems: {
+      quantity: number;
+      foodItem: {
+        name: string;
+        price: number;
+      };
+    }[];
+    status: string;
+    transaction: {
+      status: "success" | "failure";
+    }[];
+    createdAt: string;
+  }
 
   useEffect(() => {
     if (socket) {
@@ -188,59 +206,69 @@ const OrdersPage = () => {
     }
   }, [isAuthenticated, slug, router, isAuthLoading]);
 
-  const transformOrdersData = useCallback((orders: any[]): Order[] => {
+  const transformOrdersData = useCallback((orders: APIType[]): Order[] => {
+    const formatOrder = (order: APIType): Order => {
+      const {
+        id,
+        customerName: customer,
+        orderItems,
+        status,
+        transaction,
+        createdAt,
+      } = order;
+
+      const total = orderItems.reduce(
+        (
+          sum: number,
+          {
+            quantity,
+            foodItem: { price },
+          }: {
+            quantity: number;
+            foodItem: {
+              name: string;
+              price: number;
+            };
+          }
+        ) => sum + quantity * price,
+        0
+      );
+
+      const transactionStatus =
+        transaction[0].status === "success" ? "Paid" : "Pending";
+
+      const createdAtDate = new Date(createdAt);
+      const date = createdAtDate.toISOString().split("T")[0];
+      const time = createdAtDate.toISOString().split("T")[1].slice(0, 5);
+
+      return {
+        id,
+        customer,
+        items: orderItems.map(
+          ({
+            quantity,
+            foodItem: { name, price },
+          }: {
+            quantity: number;
+            foodItem: {
+              name: string;
+              price: number;
+            };
+          }) => ({
+            name,
+            quantity,
+            price: parseFloat(price.toString()),
+          })
+        ),
+        total,
+        status: status,
+        transactionStatus,
+        date,
+        time,
+      };
+    };
     return orders.map((order) => formatOrder(order));
   }, []);
-
-  const formatOrder = (order: any): Order => {
-    const {
-      id,
-      customerName: customer,
-      orderItems,
-      status,
-      transaction,
-      createdAt,
-    } = order;
-
-    const total = orderItems.reduce(
-      (sum: number, { quantity, foodItem: { price } }: any) =>
-        sum + quantity * price,
-      0
-    );
-
-    const transactionStatus =
-      transaction[0].status === "success" ? "Paid" : "Pending";
-
-    const createdAtDate = new Date(createdAt);
-    const date = createdAtDate.toISOString().split("T")[0];
-    const time = createdAtDate.toISOString().split("T")[1].slice(0, 5);
-
-    return {
-      id,
-      customer,
-      items: orderItems.map(
-        ({
-          quantity,
-          foodItem: { name, price },
-        }: {
-          quantity: number;
-          foodItem: {
-            name: string;
-            price: number;
-          };
-        }) => ({
-          name,
-          quantity,
-          price: parseFloat(price.toString()),
-        })
-      ),
-      total,
-      status: status,
-      transactionStatus,
-      date,
-      time,
-    };
-  };
 
   useEffect(() => {
     const fetchData = () => {
