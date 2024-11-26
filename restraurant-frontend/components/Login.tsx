@@ -70,6 +70,7 @@ const LoginPage = ({ role }: { role: string }) => {
 
       if (response && response.status === 200) {
         Cookies.set("token", response.data.token, { expires: 7 });
+        Cookies.set("role", response.data.role, { expires: 7 });
         login(response.data.user);
         toast({
           variant: "default",

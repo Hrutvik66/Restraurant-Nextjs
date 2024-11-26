@@ -15,7 +15,12 @@ const AdminLogin = () => {
   }
 
   if (isAuthenticated) {
-    router.push(`/admin/restaurants`);
+    let last_visted = localStorage.getItem("pathname") ?? `/admin/analysis`;
+    if (last_visted === `/admin`) {
+      last_visted = `/admin/analysis`;
+      localStorage.setItem("pathname", last_visted);
+    }
+    router.push(last_visted);
   }
   return (
     <div>

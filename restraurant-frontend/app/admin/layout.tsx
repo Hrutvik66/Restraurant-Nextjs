@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart,
   PlusCircle,
@@ -35,7 +35,6 @@ const Sidebar = ({
   setSidebarOpen?: Dispatch<SetStateAction<boolean>>;
 }) => {
   const pathname = usePathname();
-  const { slug } = useParams();
   const router = useRouter();
   const { isAuthenticated, logout } = useAuthContext();
 
@@ -52,7 +51,7 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
-      router.push(`/${slug}/owner/`);
+      router.push(`/admin/`);
     }
   };
   return (
@@ -165,6 +164,11 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { restaurantData } = useRestaurantContext();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    localStorage.setItem("pathname", pathname);
+  }, [pathname]);
 
   return (
     <AuthProvider>

@@ -23,7 +23,12 @@ import {
 } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { useRestaurantContext } from "@/context/restaurant-context";
-import { AuthProvider, useAuthContext } from "@/context/auth-context";
+import { useAuthContext } from "@/context/auth-context";
+import { Switch } from "@/components/ui/switch";
+import useApiCall from "@/hooks/use-apicall";
+import Cookies from "js-cookie";
+import { toast } from "@/hooks/use-toast";
+import CustomErrorInterface from "../../../lib/CustomErrorInterface";
 
 const Sidebar = ({
   className,
@@ -168,38 +173,81 @@ export default function AdminLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { restaurantData } = useRestaurantContext();
+  const { restaurantData, setRestaurantRefreshKey } = useRestaurantContext();
+  const { makeRequest } = useApiCall();
+  const { slug } = useParams();
+
+  const handleOpenChange = async (slug: string, checked: boolean) => {
+    try {
+      const response = await makeRequest({
+        url: `/api/owner/toggle`,
+        method: "PATCH",
+        data: {
+          isOpen: checked,
+        },
+        params: {
+          slug: slug,
+        },
+        headers: {
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      if (response && response.status === 200) {
+        setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+        toast({
+          title: "Restaurant Status Updated",
+          description: `Restaurant ${slug} is now ${
+            checked ? "open" : "closed"
+          }`,
+        });
+      }
+    } catch (error) {
+      const err = error as CustomErrorInterface;
+      toast({
+        variant: "destructive",
+        title: "Failed to Update Restaurant Service Status",
+        description: err.response.data.message,
+      });
+    }
+  };
 
   return (
-    <AuthProvider>
-      <div className="flex h-screen bg-gray-100">
-        {/* Desktop sidebar */}
-        <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
+    <div className="flex h-screen bg-gray-100">
+      {/* Desktop sidebar */}
+      <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
 
-        {/* Mobile sidebar */}
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              className="md:hidden p-2 absolute right-4 top-4 z-50"
-            >
-              <Menu size={24} />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="p-0 bg-gray-900 text-gray-100 w-64"
+      {/* Mobile sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            className="md:hidden p-2 absolute right-4 top-4 z-50"
           >
-            <Sidebar collapsed={false} setSidebarOpen={setSidebarOpen} />
-          </SheetContent>
-        </Sheet>
+            <Menu size={24} />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          className="p-0 bg-gray-900 text-gray-100 w-64"
+        >
+          <Sidebar collapsed={false} setSidebarOpen={setSidebarOpen} />
+        </SheetContent>
+      </Sheet>
 
-        {/* Main content */}
-        <div className="flex flex-col flex-1 overflow-hidden z-[49]">
-          <header className="bg-white shadow-md p-4 pt-7 flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800 ml-4">
-              {restaurantData?.name}
-            </h2>
+      {/* Main content */}
+      <div className="flex flex-col flex-1 overflow-hidden z-[49]">
+        <header className="bg-white shadow-md p-4 pt-5 md:pt-7 flex justify-between items-center">
+          <h2 className="text-2xl font-semibold text-gray-800 ml-4">
+            {restaurantData?.name}
+          </h2>
+          <div className="flex items-center">
+            <Switch
+              checked={restaurantData?.isOpen ?? false}
+              onCheckedChange={(checked) =>
+                handleOpenChange(slug as string, checked)
+              }
+              className="mr-12 md:mr-0"
+            />
             <Button
               variant="ghost"
               size="icon"
@@ -212,11 +260,11 @@ export default function AdminLayout({
                 <ChevronLeft size={24} />
               )}
             </Button>
-          </header>
-          <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-        </div>
+          </div>
+        </header>
+        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
       <Toaster />
-    </AuthProvider>
+    </div>
   );
 }

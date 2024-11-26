@@ -18,7 +18,6 @@ interface UserType {
     description: string;
     isOpen: boolean;
   };
-  allowService: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,7 +54,11 @@ export const useAuthContext = () => useContext(AuthContext);
  * @param {React.ReactNode} props.children - The child components to render within the provider.
  * @returns {JSX.Element} The AuthContext provider component wrapping its children.
  */
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): JSX.Element => {
   const [user, setUser] = useState<UserType | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
@@ -70,10 +73,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
      * @returns {Promise<void>}
      */
 
-    const fetchUser = async (role: string): Promise<void> => {
+    const fetchUser = async (): Promise<void> => {
       try {
         setIsAuthLoading(true);
         const token = Cookies.get("token");
+        const role = Cookies.get("role");
         const response = await makeRequest({
           url: `/api/${role}/id`,
           method: "GET",
@@ -95,7 +99,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err) {
         const error = err as CustomErrorInterface;
-        // logout();
         toast({
           variant: "destructive",
           title: error.response.data.message,
@@ -105,7 +108,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAuthLoading(false);
       }
     };
-    fetchUser("owner");
+    fetchUser();
   }, [makeRequest, slug]);
 
   const logout = () => {

@@ -46,59 +46,61 @@ interface Restaurant {
   name: string;
   location: string;
   owner: {
-    name: string;
     email: string;
   };
   isOpen: boolean;
   allowService: boolean;
+  createdAt: string;
 }
 
 const RestaurantDetails = ({
   restaurant,
-  onStatusChange,
   onServiceChange,
 }: {
   restaurant: Restaurant;
-  onStatusChange: (restaurantId: string, isOpen: boolean) => void;
   onServiceChange: (restaurantId: string, allowService: boolean) => void;
 }) => (
   <Card className="w-full max-w-3xl mx-auto">
     <CardContent className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700">
-            Restaurant Details
-          </h3>
-          <p className="text-sm text-gray-600">Name: {restaurant.name}</p>
-          <p className="text-sm text-gray-600">
-            Location: {restaurant.location}
-          </p>
-          <p className="text-sm text-gray-600">
-            Owner: {restaurant.owner.name}
-          </p>
-          <p className="text-sm text-gray-600">
-            Email: {restaurant.owner.email}
-          </p>
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-orange-600">
+            {restaurant.name}
+          </h2>
+          <Badge
+            className={`${
+              restaurant.isOpen ? "bg-green-500" : "bg-red-500"
+            } text-white`}
+          >
+            {restaurant.isOpen ? "Open" : "Closed"}
+          </Badge>
         </div>
-        <div className="text-left md:text-right">
-          <h3 className="text-lg font-semibold text-gray-700">Status</h3>
-          <div className="flex items-center justify-end mt-2">
-            <span className="mr-2">Open</span>
-            <Switch
-              checked={restaurant.isOpen}
-              onCheckedChange={(checked) =>
-                onStatusChange(restaurant.id, checked)
-              }
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">Location</p>
+            <p className="font-medium">{restaurant.location}</p>
           </div>
-          <div className="flex items-center justify-end mt-2">
-            <span className="mr-2">Allow Service</span>
-            <Switch
-              checked={restaurant.allowService}
-              onCheckedChange={(checked) =>
-                onServiceChange(restaurant.id, checked)
-              }
-            />
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">Email</p>
+            <p className="font-medium">{restaurant.owner.email}</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">Created At</p>
+            <p className="font-medium">
+              {new Date(restaurant.createdAt).toLocaleString()}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-500">Service</p>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={restaurant.allowService}
+                onCheckedChange={(checked) =>
+                  onServiceChange(restaurant.id, checked)
+                }
+              />
+              <span>{restaurant.allowService ? "Allowed" : "Disallowed"}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -145,18 +147,19 @@ export default function RestaurantsPage() {
         };
         isOpen: boolean;
         allowService: boolean;
+        createdAt: string;
       }>
     ): Restaurant[] => {
       return restaurants.map((restaurant) => ({
         id: restaurant.id,
         name: restaurant.name,
-        location: restaurant.location,
+        location: restaurant.location ?? "-",
         owner: {
-          name: restaurant.owner.name,
           email: restaurant.owner.email,
         },
         isOpen: restaurant.isOpen,
         allowService: restaurant.allowService,
+        createdAt: restaurant.createdAt,
       }));
     },
     []
@@ -190,38 +193,6 @@ export default function RestaurantsPage() {
     updateFilteredRestaurants();
   }, [searchTerm, restaurants, statusFilter, serviceFilter]);
 
-  const handleStatusChange = async (restaurantId: string, isOpen: boolean) => {
-    try {
-      const token = Cookies.get("token");
-      const response = await makeRequest({
-        url: `/api/restaurants/${restaurantId}`,
-        method: "PUT",
-        data: {
-          isOpen,
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response && response.status === 200) {
-        setRefreshKey((prevKey: number) => (prevKey + 1) % 10);
-        toast({
-          title: "Restaurant Status Updated",
-          description: `Restaurant ${restaurantId} is now ${
-            isOpen ? "open" : "closed"
-          }`,
-        });
-      }
-    } catch (error) {
-      const err = error as CustomErrorInterface;
-      toast({
-        title: "Failed to Update Restaurant Status",
-        description: err.response.data.message,
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleServiceChange = async (
     restaurantId: string,
     allowService: boolean
@@ -229,8 +200,8 @@ export default function RestaurantsPage() {
     try {
       const token = Cookies.get("token");
       const response = await makeRequest({
-        url: `/api/restaurants/${restaurantId}`,
-        method: "PUT",
+        url: `/api/restaurant/${restaurantId}/toogleService`,
+        method: "PATCH",
         data: {
           allowService,
         },
@@ -334,11 +305,10 @@ export default function RestaurantsPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p>
-                        <strong>Location:</strong> {restaurant.location}
-                      </p>
-                      <p>
-                        <strong>Owner:</strong> {restaurant.owner.name}
+                      <p className="text-sm break-words">
+                        <strong>Location:</strong>
+                        {/* wrap text if too long */}
+                        {restaurant.location}
                       </p>
                       <p>
                         <strong>Email:</strong> {restaurant.owner.email}
@@ -374,7 +344,6 @@ export default function RestaurantsPage() {
                           {selectedRestaurant && (
                             <RestaurantDetails
                               restaurant={selectedRestaurant}
-                              onStatusChange={handleStatusChange}
                               onServiceChange={handleServiceChange}
                             />
                           )}
@@ -392,9 +361,8 @@ export default function RestaurantsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead>Name</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Owner</TableHead>
                           <TableHead>Email</TableHead>
+                          <TableHead>Created On</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Service</TableHead>
                           <TableHead>Actions</TableHead>
@@ -404,9 +372,10 @@ export default function RestaurantsPage() {
                         {filteredRestaurants.map((restaurant) => (
                           <TableRow key={restaurant.id}>
                             <TableCell>{restaurant.name}</TableCell>
-                            <TableCell>{restaurant.location}</TableCell>
-                            <TableCell>{restaurant.owner.name}</TableCell>
                             <TableCell>{restaurant.owner.email}</TableCell>
+                            <TableCell>
+                              {new Date(restaurant.createdAt).toLocaleString()}
+                            </TableCell>
                             <TableCell>
                               <Badge
                                 className={`${
@@ -452,7 +421,6 @@ export default function RestaurantsPage() {
                                   {selectedRestaurant && (
                                     <RestaurantDetails
                                       restaurant={selectedRestaurant}
-                                      onStatusChange={handleStatusChange}
                                       onServiceChange={handleServiceChange}
                                     />
                                   )}
