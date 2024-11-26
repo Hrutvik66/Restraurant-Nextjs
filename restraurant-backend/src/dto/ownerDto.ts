@@ -34,8 +34,8 @@ export interface OwnerDataDto {
     location?: string;
     description?: string;
     isOpen: boolean;
+    allowService: boolean;
   };
-  allowService: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

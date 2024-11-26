@@ -5,7 +5,7 @@ import AdminController from "../controllers/adminController";
 // middleware
 import { auth } from "../middleware/auth.middleware";
 
-const { createAdmin, updateAdminPassword, loginAdmin, toggleOwnerService } =
+const { createAdmin, updateAdminPassword, loginAdmin, getAdminById } =
   AdminController;
 
 const adminRouter = Router();
@@ -16,7 +16,7 @@ adminRouter.post("/", createAdmin);
 adminRouter.put("/password", auth, updateAdminPassword);
 // login admin
 adminRouter.post("/login", loginAdmin);
-// toggle owner service
-adminRouter.patch("/:id/toogleService", auth, toggleOwnerService);
+// get admin data
+adminRouter.get("/id", auth, getAdminById);
 
 export default adminRouter;

@@ -26,6 +26,6 @@ ownerRouter.put("/:id", auth, updateOwner);
 // login owner
 ownerRouter.post("/login", login);
 // toggle restaurant open status
-ownerRouter.patch("/:id/toggleOpen", auth, toggleRestaurantOpen);
+ownerRouter.patch("/toggle", auth, toggleRestaurantOpen);
 
 export default ownerRouter;

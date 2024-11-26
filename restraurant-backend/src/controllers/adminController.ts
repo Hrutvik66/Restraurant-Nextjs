@@ -7,7 +7,8 @@ import { CustomRequest, CustomJwtPayload } from "../middleware/auth.middleware";
 // import ownerService
 import OwnerService from "../services/ownerServices";
 
-const { createAdmin, updateAdminPassword, loginAdmin } = AdminService;
+const { createAdmin, updateAdminPassword, loginAdmin, getAdminById } =
+  AdminService;
 
 // Error interface
 interface Error {
@@ -40,34 +41,33 @@ class AdminController {
   loginAdmin = async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      const { user, token } = await loginAdmin(email, password);
-      res.status(200).json({ user, token });
+      const { user, token, role } = await loginAdmin(email, password);
+      res.status(200).json({ user, token, role });
     } catch (error: unknown) {
       const e = error as Error;
       res.status(400).json({ error: e.message });
     }
   };
 
-  // stop owner service
-  toggleOwnerService = async (req: Request, res: Response) => {
+  // get admin by id
+  getAdminById = async (req: Request, res: Response) => {
     try {
+      let id, role;
       if ((req as CustomRequest).token) {
-        const { id, role } = (req as CustomRequest).token as CustomJwtPayload;
+        id = ((req as CustomRequest).token as CustomJwtPayload).id;
+        role = ((req as CustomRequest).token as CustomJwtPayload).role;
         if (role !== "admin") {
           throw new Error("Access denied");
         }
       }
-      const data = await OwnerService.toggleOwnerService(req.params.id);
-      res
-        .status(200)
-        .json({
-          data: data,
-          message: `Owner service ${
-            data.allowService === true ? "started" : "stopped"
-          }`,
-        });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to stop owner service" });
+      const admin = await getAdminById(id as string);
+      if (!admin) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+      res.status(200).json(admin);
+    } catch (error: unknown) {
+      const e = error as Error;
+      res.status(500).json({ error: e.message });
     }
   };
 }

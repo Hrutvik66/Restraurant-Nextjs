@@ -106,7 +106,6 @@ class OwnerService {
               isOpen: true,
             },
           },
-          allowService: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -120,37 +119,6 @@ class OwnerService {
         throw new CustomError("You are not a owner of this restaurant", 401);
       }
       return ownerData;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // toggle owner service
-  toggleOwnerService = async (id: string) => {
-    try {
-      const ownerData = await prisma.owner.findUnique({
-        where: {
-          id: id,
-        },
-      });
-      if (!ownerData) {
-        throw new CustomError("Owner not found", 404);
-      }
-
-      const updatedOwner = await prisma.owner.update({
-        where: {
-          id: id,
-        },
-        data: {
-          allowService: !ownerData.allowService,
-          restaurant: {
-            update: {
-              isOpen: !ownerData.allowService === false && false,
-            },
-          },
-        },
-      });
-      return updatedOwner;
     } catch (error) {
       throw error;
     }
@@ -186,7 +154,7 @@ class OwnerService {
         throw new CustomError("Owner not found", 404);
       }
 
-      if (!owner.allowService) {
+      if (!owner.restaurant.allowService) {
         throw new CustomError("Owner service is currently stopped", 403);
       }
 
@@ -215,23 +183,23 @@ class OwnerService {
           description: owner.restaurant.description,
           isOpen: owner.restaurant.isOpen,
         },
-        allowService: owner.allowService,
+
         createdAt: owner.createdAt,
         updatedAt: owner.updatedAt,
       };
 
-      return { user, token };
+      return { user, token, role: "owner" };
     } catch (error) {
       throw error;
     }
   };
 
   // toggle Restaurant open
-  toggleRestaurantOpen = async (id: string, isOpen: boolean, slug: string) => {
+  toggleRestaurantOpen = async (isOpen: boolean, slug: string) => {
     try {
       const Restaurant = await prisma.restaurant.update({
         where: {
-          id: id,
+          slug,
         },
         data: {
           isOpen: isOpen,

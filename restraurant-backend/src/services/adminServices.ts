@@ -109,7 +109,17 @@ class AdminService {
       expiresIn: "7d",
     });
 
-    return { user: admin, token: token };
+    return { user: admin, token: token, role: "admin" };
+  };
+
+  // get admin by id
+  getAdminById = async (id: string) => {
+    const admin = await prisma.admin.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return admin;
   };
 }
 

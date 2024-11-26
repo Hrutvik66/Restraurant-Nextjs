@@ -88,12 +88,14 @@ class OwnerController {
   // user login
   login = async (req: Request, res: Response) => {
     try {
-      const { user, token } = await login(
+      const { user, token, role } = await login(
         req.body.email,
         req.body.password,
         req.query.slug as string
       );
-      res.status(200).json({ message: "Logged in successfully", user, token });
+      res
+        .status(200)
+        .json({ message: "Logged in successfully", user, token, role });
     } catch (error) {
       console.log((error as any).status);
 
@@ -113,7 +115,6 @@ class OwnerController {
         }
       }
       const updatedOwner = await toggleRestaurantOpen(
-        req.params.id,
         req.body.isOpen,
         req.query.slug as string
       );
