@@ -72,7 +72,7 @@ cd Restraurant-Nextjs-main
    ```
 5. Start the server:
    ```bash
-   npm run dev
+   npm run start:dev
    ```
 
 #### 3. Frontend Setup 🖥️
