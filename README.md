@@ -1,33 +1,74 @@
-# 🍴 Restaurant Website Project 🍽️
+# 🍴 Restaurant Website Project (Ongoing) 🍽️
 
-![Restaurant Banner](https://img.freepik.com/free-vector/cloud-kitchen-concept-illustration_114360-19132.jpg?t=st=1732685371~exp=1732688971~hmac=1274132d33a98f55bc9df7614508f577d7c309148110c89039824d3215844179&w=700&h=400) 
+![Restaurant Banner](https://img.freepik.com/free-vector/cloud-kitchen-concept-illustration_114360-19132.jpg?t=st=1732685371~exp=1732688971~hmac=1274132d33a98f55bc9df7614508f577d7c309148110c89039824d3215844179&w=700&h=400)
 
 ## 🌟 Overview
+
 This project is a fully-featured restaurant management platform that includes a backend and frontend:
 
 - **Backend**: A RESTful API built with Node.js, Express.js, and Prisma, featuring TypeScript for type safety and PostgreSQL for the database.
 - **Frontend**: A modern web interface built with Next.js, Tailwind CSS, and React Context for state management.
 
 ## ✨ Features
+
 ### For Users 🛒
+
 - 🏷️ Browse the menu and add items to the cart.
 - 🛍️ Place orders without creating an account.
 
 ### For Restaurant Owners 🧑‍🍳
+
 - 🍔 Manage food items (add, update, delete).
 - 📋 View and update order statuses.
 - 🏪 Open and close the restaurant.
 
 ### Admin Panel ⚙️
+
 - 👨‍💼 Manage restaurant owners.
 - 📊 Monitor analytics such as:
   - 📅 Sales per day
-  - 🏆 Top-selling items
   - 💰 Total revenue
   - 📦 Orders placed this month
 
+## 🌐 URL Links and Their Functionality
+
+### **User Interface**
+
+**URL:**  
+`https://restraurant-gray.vercel.app/<slug>/user/menu`
+
+- **Purpose:** This URL is for users to browse the menu of a specific restaurant.
+- **Details:**
+  - The URL contains a **slug** (e.g., `<slug>`) which uniquely identifies each restaurant.
+  - The menu is dynamically loaded based on the slug, ensuring users see the correct menu for their selected restaurant.
+
+### **Owner Interface**
+
+**URL:**  
+`https://restraurant-gray.vercel.app/<slug>/owner`
+
+- **Purpose:** This URL is for the restaurant owner to manage their restaurant.
+- **Details:**
+  - After logging in, the owner can perform various tasks such as:
+    - Managing the menu (add, update, delete items).
+    - Viewing analytics (sales, orders, top items, revenue).
+    - Controlling restaurant status (open/close).
+
+### **Admin Interface**
+
+**URL:**  
+`https://restraurant-gray.vercel.app/admin`
+
+- **Purpose:** This URL is for the admin to manage the entire platform.
+- **Details:**
+  - The admin can log in to perform tasks such as:
+    - Managing restaurant owners.
+    - Overseeing the status and data of multiple restaurants.
+
 ## 🛠️ Tech Stack
+
 ### Backend
+
 - ![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white) **Node.js** with **Express.js** for building the REST API.
 - ![Prisma](https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white) **Prisma** ORM for database operations.
 - ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) **PostgreSQL** as the database.
@@ -36,6 +77,7 @@ This project is a fully-featured restaurant management platform that includes a 
 - **PhonePe Payment Gateway** for transactions.
 
 ### Frontend
+
 - ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=next.js&logoColor=white) **Next.js** for server-side rendering and client-side navigation.
 - ![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=white) **React** with Context API for state management.
 - ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-38B2AC?logo=tailwind-css&logoColor=white) **Tailwind CSS** for styling.
@@ -43,20 +85,25 @@ This project is a fully-featured restaurant management platform that includes a 
 - ![Socket.io](https://img.shields.io/badge/Socket.io-010101?logo=socket.io&logoColor=white) **Socket.io** for real-time updates.
 
 ## 🚀 Installation
+
 ### Prerequisites
+
 - Node.js (>= 16.x)
 - PostgreSQL
 - Redis
 - Yarn or npm
 
 ### Steps to Run the Project
+
 #### 1. Clone the Repository 🛠️
+
 ```bash
 git clone <repository-url>
 cd Restraurant-Nextjs-main
 ```
 
 #### 2. Backend Setup 🗄️
+
 1. Navigate to the backend folder:
    ```bash
    cd restraurant-backend
@@ -72,10 +119,11 @@ cd Restraurant-Nextjs-main
    ```
 5. Start the server:
    ```bash
-   npm run start:dev
+   npm run dev
    ```
 
 #### 3. Frontend Setup 🖥️
+
 1. Navigate to the frontend folder:
    ```bash
    cd ../restraurant-frontend
@@ -90,11 +138,14 @@ cd Restraurant-Nextjs-main
    ```
 
 ## 🗂️ Project Structure
+
 ### Backend (`restraurant-backend`)
+
 - **`src/`**: Contains the application logic, routes, and controllers.
 - **`prisma/`**: Database schema and migrations.
 
 ### Frontend (`restraurant-frontend`)
+
 - **`app/`**: Next.js pages and routing.
 - **`components/`**: Reusable UI components.
 - **`context/`**: State management using React Context.
@@ -102,15 +153,39 @@ cd Restraurant-Nextjs-main
 - **`public/`**: Static assets like images.
 
 ## 📜 Scripts
+
 ### Backend
+
 - **`npm run dev`**: Start the development server.
 - **`npm run build`**: Build the backend.
 - **`npm run migrate`**: Run Prisma migrations.
 
 ### Frontend
+
 - **`npm run dev`**: Start the frontend development server.
 - **`npm run build`**: Build the frontend for production.
 - **`npm run lint`**: Lint the codebase.
 
+## 🔐 Role-Based System Testing
+
+If you want to test the role-based system, use the following credentials:
+
+### Admin Login
+
+```json
+{
+  "email": "test@gmail.com",
+  "password": "123456789"
+}
+```
+
+### Owner Login
+
+```json
+{
+  "email": "rest1@gmail.com",
+  "password": "123456789"
+}
+```
 
 ![Thanks for visiting!](https://img.freepik.com/free-vector/thank-you-lettering-with-curls_1262-6964.jpg?t=st=1732685529~exp=1732689129~hmac=14179e94094e5174c74ed90aeffed4b208b5b2acfba35b19c652dd8e79ce68a8&w=300)
