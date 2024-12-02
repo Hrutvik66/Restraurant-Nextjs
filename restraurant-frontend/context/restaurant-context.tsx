@@ -11,26 +11,26 @@ import { useParams } from "next/navigation";
 // axios
 import axios from "axios";
 
-interface Restaurant {
+export interface FoodItem{
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  isListed: boolean;
+  isDeleted: boolean;
+  restaurantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Restaurant {
   id: string;
   name: string;
   location: string;
   description: string;
   slug: string;
   isOpen: boolean;
-  foodItems: [
-    {
-      id: string;
-      name: string;
-      description: string;
-      price: string;
-      isListed: boolean;
-      isDeleted: boolean;
-      restaurantId: string;
-      createdAt: Date;
-      updatedAt: Date;
-    }
-  ];
+  foodItems: FoodItem[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +40,8 @@ interface RestaurantContextType {
   isRestaurantLoading: boolean;
   isRestaurantError: string | null;
   setRestaurantRefreshKey: React.Dispatch<React.SetStateAction<number>>;
+  setRestaurantData: React.Dispatch<React.SetStateAction<Restaurant | null>>;  
+  setIsRestaurantLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const RestaurantContext = createContext<RestaurantContextType>({
@@ -47,13 +49,15 @@ const RestaurantContext = createContext<RestaurantContextType>({
   isRestaurantLoading: false,
   isRestaurantError: "",
   setRestaurantRefreshKey: () => {},
+  setRestaurantData: () => {},
+  setIsRestaurantLoading: () => {},
 });
 
 export const useRestaurantContext = () => useContext(RestaurantContext);
 
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
   const { slug } = useParams();
-  const [restaurantData, setRestaurantData] = useState(null);
+  const [restaurantData, setRestaurantData] = useState<Restaurant | null>(null);
   const [isRestaurantLoading, setIsRestaurantLoading] = useState(false);
   const [isRestaurantError, setIsRestaurantError] = useState("");
   // Track refresh
@@ -97,6 +101,8 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
         isRestaurantLoading,
         isRestaurantError,
         setRestaurantRefreshKey,
+        setRestaurantData,
+        setIsRestaurantLoading,
       }}
     >
       {children}

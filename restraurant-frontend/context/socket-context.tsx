@@ -2,8 +2,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client"; // Import Socket type
 
+interface SocketContextType {
+  socket: Socket | null;
+}
 // Create Socket Context
-const SocketContext = createContext<Socket | null>(null); // Specify the type
+const SocketContext = createContext<SocketContextType>({
+  socket: null,
+}); // Specify the type
 
 // Custom hook to use the socket context
 export const useSocket = () => useContext(SocketContext);
@@ -24,6 +29,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
+    <SocketContext.Provider value={{socket}}>{children}</SocketContext.Provider>
   );
 };

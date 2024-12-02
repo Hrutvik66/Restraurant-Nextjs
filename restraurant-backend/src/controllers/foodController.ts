@@ -4,6 +4,7 @@
 import { Request, Response } from "express";
 // foodService
 import FoodItemService from "../services/foodServices";
+import { io } from "../index";
 
 const {
   checkRequestAuthentication,
@@ -20,6 +21,9 @@ class FoodItemController {
     try {
       checkRequestAuthentication(req, res);
       const foodItem = await createFoodItem(req.body);
+      if (foodItem) {
+        io.emit('foodItemAdded', foodItem);
+      }
       res.status(201).json({
         message: "Food item created successfully",
         foodItem: foodItem,
@@ -62,6 +66,9 @@ class FoodItemController {
       if (!foodItem) {
         return res.status(404).json({ message: "Food item not found" });
       }
+      else{
+        io.emit('foodItemDeleted',foodItem);
+      }
       res.status(200).json({ message: "Food item deleted successfully" });
     } catch (error) {
       // update the status if access failed
@@ -81,6 +88,9 @@ class FoodItemController {
         return res.status(404).json({ message: "Food item not found" });
       }
       const updatedFoodItem = await updateFoodItem(req.params.id, req.body);
+      if (updatedFoodItem) {
+        io.emit('foodItemUpdated',updatedFoodItem);
+      }
       res.status(200).json({
         message: "Food item updated successfully",
         foodItem: updatedFoodItem,
@@ -104,6 +114,11 @@ class FoodItemController {
         req.body.isListed,
         req.body.slug
       );
+      if (!updatedFoodItem) {
+        return res.status(404).json({ message: "Food item not found" });
+      } else{
+        io.emit('foodItemStatusUpdated',updatedFoodItem);
+      }
       res.status(200).json({
         message: "Food item status updated successfully",
         foodItem: updatedFoodItem,

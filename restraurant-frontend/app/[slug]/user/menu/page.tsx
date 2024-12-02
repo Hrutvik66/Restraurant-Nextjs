@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,18 +11,87 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
-import { useRestaurantContext } from "@/context/restaurant-context";
+import { FoodItem, Restaurant, useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import Loader from "@/components/Loader";
+import { useSocket } from "@/context/socket-context";
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  isListed: boolean;
+  isDeleted: boolean;
+  restaurantId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const MenuPage = () => {
-  const { restaurantData, isRestaurantLoading, isRestaurantError } =
-    useRestaurantContext();
+  const {
+    restaurantData,
+    setRestaurantData,
+    setIsRestaurantLoading,
+    setRestaurantRefreshKey,
+    isRestaurantLoading,
+    isRestaurantError,
+  } = useRestaurantContext();
   const { cartItems, addItemToCart, updateItemFromCart } = useCart();
+  const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
+  const { socket } = useSocket();
+
+  // update menu items when restaurant data changes
+  useEffect(() => {
+    if (restaurantData) {
+      const availableData = restaurantData?.foodItems?.filter(
+        (item) => !item.isDeleted && item.isListed
+      );
+      setAvailableItems(availableData);
+    }
+  }, [restaurantData, isRestaurantLoading]);
+
+  // Inside RestaurantProvider
+  useEffect(() => {
+    const updateFoodItems = (foodItem: FoodItem) => {
+      setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
+      // check if food item is in the list
+      if (!availableItems.find((item) => item.id === foodItem.id)) {
+        setAvailableItems((prevItems) => [...prevItems, foodItem]);
+      }
+      const updatedItems: FoodItem[] = availableItems.map((dataItem) =>
+        dataItem.id === foodItem.id ? foodItem : dataItem
+      );
+      setAvailableItems(updatedItems);
+    };
+
+    // Listen for food item updates
+    if (socket) {
+      socket.on("foodItemAdded", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemDeleted", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemUpdated", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemStatusUpdated", (foodItem) => {     
+        updateFoodItems(foodItem);
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [socket]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
   }
+
+  console.log("Restaurant data:", restaurantData);
+  
 
   if (isRestaurantError) {
     return (
@@ -39,10 +108,6 @@ const MenuPage = () => {
   const isInCart = (itemId: string) => {
     return cartItems.some((cartItem) => cartItem.itemId === itemId);
   };
-
-  const availableItems = restaurantData?.foodItems?.filter(
-    (item) => !item.isDeleted && item.isListed
-  );
 
   return (
     <div className="flex flex-col pb-8">

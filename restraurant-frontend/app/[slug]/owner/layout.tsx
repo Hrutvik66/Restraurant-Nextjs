@@ -29,6 +29,7 @@ import useApiCall from "@/hooks/use-apicall";
 import Cookies from "js-cookie";
 import { toast } from "@/hooks/use-toast";
 import CustomErrorInterface from "../../../lib/CustomErrorInterface";
+import { AuthProvider } from "@/context/auth-context";
 
 const Sidebar = ({
   className,
@@ -212,6 +213,7 @@ export default function AdminLayout({
   };
 
   return (
+    <AuthProvider>
     <div className="flex h-screen bg-gray-100">
       {/* Desktop sidebar */}
       <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
@@ -264,7 +266,8 @@ export default function AdminLayout({
         </header>
         <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
-      <Toaster />
     </div>
+      <Toaster />
+    </AuthProvider>
   );
 }
