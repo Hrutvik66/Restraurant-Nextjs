@@ -167,6 +167,7 @@ cd Restraurant-Nextjs-main
 - **`npm run lint`**: Lint the codebase.
 
 ## 🔐 Role-Based System Testing
+Test application link: https://restraurant-gray.vercel.app/test/user/menu
 
 If you want to test the role-based system, use the following credentials:
 
