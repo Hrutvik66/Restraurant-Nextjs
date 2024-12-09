@@ -65,10 +65,18 @@ const MenuPage = () => {
     };
 
     if (socket) {
-      socket.on("foodItemAdded", updateFoodItems);
-      socket.on("foodItemDeleted", updateFoodItems);
-      socket.on("foodItemUpdated", updateFoodItems);
-      socket.on("foodItemStatusUpdated", updateFoodItems);
+      socket.on("foodItemAdded", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemDeleted", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemUpdated", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
+      socket.on("foodItemStatusUpdated", (foodItem) => {
+        updateFoodItems(foodItem);
+      });
 
       return () => {
         socket.disconnect();
