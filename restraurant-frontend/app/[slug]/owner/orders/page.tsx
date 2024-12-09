@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -135,9 +135,8 @@ const OrdersPage = () => {
   const { slug } = useParams();
   const { apiData, setRefreshKey } = useFetch(`/api/order/?slug=${slug}`);
   const { makeRequest, loading } = useApiCall();
-  const socket = useSocket();
+  const { socket } = useSocket();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState("New");
   const [transactionStatusFilter, setTransactionStatusFilter] = useState("All");
@@ -145,7 +144,7 @@ const OrdersPage = () => {
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
-  console.log(apiData);
+  // console.log(apiData);
 
   interface APIType {
     id: string;
@@ -163,6 +162,17 @@ const OrdersPage = () => {
     }[];
     createdAt: string;
   }
+
+  const filteredOrders = useMemo(() => {
+    const filtered = orders.filter(
+      (order) =>
+        (statusFilter === "All" || order.status === statusFilter) &&
+        (transactionStatusFilter === "All" ||
+          order.transactionStatus === transactionStatusFilter) &&
+        (!dateFilter || order.date === format(dateFilter, "yyyy-MM-dd"))
+    );
+    return filtered;
+  }, [dateFilter, orders, statusFilter, transactionStatusFilter]);
 
   useEffect(() => {
     if (socket) {
@@ -195,9 +205,6 @@ const OrdersPage = () => {
       };
     }
   }, [socket]);
-
-  console.log("order", orders);
-  console.log("filtered orders", filteredOrders);
 
   // auth check useEffect
   useEffect(() => {
@@ -278,19 +285,6 @@ const OrdersPage = () => {
 
     fetchData();
   }, [apiData, setRefreshKey, transformOrdersData]);
-  useEffect(() => {
-    const updateFilteredOrders = () => {
-      const filtered = orders.filter(
-        (order) =>
-          (statusFilter === "All" || order.status === statusFilter) &&
-          (transactionStatusFilter === "All" ||
-            order.transactionStatus === transactionStatusFilter) &&
-          (!dateFilter || order.date === format(dateFilter, "yyyy-MM-dd"))
-      );
-      setFilteredOrders(filtered);
-    };
-    updateFilteredOrders();
-  }, [dateFilter, orders, statusFilter, transactionStatusFilter]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -364,6 +358,9 @@ const OrdersPage = () => {
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;
   }
+
+  // console.log("order", orders);
+  // console.log("filtered orders", filteredOrders);
 
   return (
     <div className="container mx-auto p-4">

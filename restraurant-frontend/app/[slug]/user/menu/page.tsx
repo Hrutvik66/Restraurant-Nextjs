@@ -11,10 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
-import { FoodItem, Restaurant, useRestaurantContext } from "@/context/restaurant-context";
+import { FoodItem, useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import Loader from "@/components/Loader";
 import { useSocket } from "@/context/socket-context";
+import InfoCard from "@/components/InfoCard";
 
 interface MenuItem {
   id: string;
@@ -31,8 +32,6 @@ interface MenuItem {
 const MenuPage = () => {
   const {
     restaurantData,
-    setRestaurantData,
-    setIsRestaurantLoading,
     setRestaurantRefreshKey,
     isRestaurantLoading,
     isRestaurantError,
@@ -76,7 +75,7 @@ const MenuPage = () => {
       socket.on("foodItemUpdated", (foodItem) => {
         updateFoodItems(foodItem);
       });
-      socket.on("foodItemStatusUpdated", (foodItem) => {     
+      socket.on("foodItemStatusUpdated", (foodItem) => {
         updateFoodItems(foodItem);
       });
 
@@ -84,14 +83,13 @@ const MenuPage = () => {
         socket.disconnect();
       };
     }
-  }, [socket]);
+  }, [availableItems, setRestaurantRefreshKey, socket]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
   }
 
   console.log("Restaurant data:", restaurantData);
-  
 
   if (isRestaurantError) {
     return (
@@ -113,7 +111,12 @@ const MenuPage = () => {
     <div className="flex flex-col pb-8">
       <main className="flex-grow container mx-auto py-8 pt-24">
         <h1 className="text-4xl font-bold mb-8 text-center">Our Menu</h1>
-        {availableItems && availableItems.length > 0 ? (
+        {!restaurantData?.isOpen ? (
+          <InfoCard
+            info="Restaurant is currently closed"
+            message="Please come back later"
+          />
+        ) : availableItems && availableItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {availableItems.map((item) => (
               <Card key={item.id}>
@@ -163,17 +166,11 @@ const MenuPage = () => {
             ))}
           </div>
         ) : (
-          <Card className="w-full max-w-md mx-auto">
-            <CardContent className="flex flex-col items-center justify-center p-6">
-              <p className="text-lg font-semibold text-center">
-                We&apos;re sorry, there are no items available on the menu at
-                the moment.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2 text-center">
-                Please check back later for our delicious offerings!
-              </p>
-            </CardContent>
-          </Card>
+          <InfoCard
+            info="We're sorry, there are no items available on the menu at
+                the moment."
+            message=" Please check back later for our delicious offerings!"
+          />
         )}
       </main>
     </div>

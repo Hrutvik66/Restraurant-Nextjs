@@ -110,6 +110,8 @@ class OwnerController {
     try {
       if ((req as CustomRequest).token) {
         const { id, role } = (req as CustomRequest).token as CustomJwtPayload;
+        console.log(role);
+
         if (role !== "owner") {
           throw new Error("Access denied");
         }
@@ -120,6 +122,8 @@ class OwnerController {
       );
       res.status(200).json(updatedOwner);
     } catch (error) {
+      console.log(error);
+
       res
         .status(500)
         .json({ message: "Failed to toggle restaurant open status" });

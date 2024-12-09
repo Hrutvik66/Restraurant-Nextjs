@@ -215,7 +215,7 @@ class OwnerService {
       }
       return Restaurant;
     } catch (error) {
-      throw new Error("Failed to toggle restaurant open");
+      throw error;
     }
   };
 }

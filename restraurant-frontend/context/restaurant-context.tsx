@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 // axios
 import axios from "axios";
 
-export interface FoodItem{
+export interface FoodItem {
   id: string;
   name: string;
   description: string;
@@ -40,7 +40,7 @@ interface RestaurantContextType {
   isRestaurantLoading: boolean;
   isRestaurantError: string | null;
   setRestaurantRefreshKey: React.Dispatch<React.SetStateAction<number>>;
-  setRestaurantData: React.Dispatch<React.SetStateAction<Restaurant | null>>;  
+  setRestaurantData: React.Dispatch<React.SetStateAction<Restaurant | null>>;
   setIsRestaurantLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -65,6 +65,7 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (slug) {
+      localStorage.setItem("restaurant", slug as string);
       const fetchRestaurantData = async () => {
         try {
           setIsRestaurantLoading(true);
