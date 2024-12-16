@@ -49,10 +49,10 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         {children || (
-          <Button variant="outline" size="icon" className="relative">
-            <ShoppingCart className="h-10 w-10" />
+          <Button variant="ghost" size="icon" className="relative hidden md:flex">
+            <ShoppingCart className="h-6 w-6" />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-0 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                 {totalItems}
               </span>
             )}

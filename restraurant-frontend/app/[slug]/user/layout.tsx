@@ -19,8 +19,6 @@ export default function RootLayout({
     <Providers>
       <Navbar />
       {children}
-      {/* <Footer /> */}
-      <MobileCartButton />
       <Toaster />
     </Providers>
   );

@@ -30,6 +30,7 @@ interface CartContextType {
   addItemToCart: (itemId: string) => Promise<void>;
   updateItemFromCart: (itemId: string, change: number) => void;
   setCartRefreshKey: React.Dispatch<React.SetStateAction<number>>;
+  getTotalPrice: () => number;
 }
 
 const CartContext = createContext<CartContextType>({
@@ -38,6 +39,7 @@ const CartContext = createContext<CartContextType>({
   addItemToCart: async () => {},
   updateItemFromCart: async () => {},
   setCartRefreshKey: () => {},
+  getTotalPrice: () => 0,
 });
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
@@ -125,6 +127,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     );
   };
 
+  // get the total price of all items
+
+  const getTotalPrice = () => {
+    const total = filteredCartItems.reduce(
+      (sum, item) => sum + Number(item.price) * item.quantity,
+      0
+    );
+    return total;
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -133,6 +145,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         addItemToCart,
         updateItemFromCart,
         setCartRefreshKey,
+        getTotalPrice,
       }}
     >
       {children}
