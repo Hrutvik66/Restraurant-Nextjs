@@ -26,6 +26,7 @@ import paymentRouter from "./routes/paymentRoutes";
 import adminRouter from "./routes/adminRoutes";
 import ownerRouter from "./routes/ownerRoutes";
 import restaurantRouter from "./routes/restaurantRoutes";
+import userRouter from "./routes/user.route";
 
 const app: Application = express();
 
@@ -66,6 +67,8 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/admin", adminRouter);
 // 9. restaurant route
 app.use("/api/restaurant", restaurantRouter);
+// 10. user route
+app.use("/api/user", userRouter);
 
 // port number
 const port: number = 3001;

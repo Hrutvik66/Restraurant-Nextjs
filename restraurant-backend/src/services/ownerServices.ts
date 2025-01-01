@@ -10,8 +10,9 @@ import crypto from "crypto";
 import jwt, { Secret } from "jsonwebtoken";
 // customError
 import CustomError from "../utils/CustomError";
+import UserServices from "./user.service";
 
-class OwnerService {
+class OwnerService extends UserServices {
   // create new owner and restraurant at same time
   createOwner = async (data: any) => {
     try {
@@ -22,19 +23,27 @@ class OwnerService {
         .createHash("sha1")
         .update(data.password)
         .digest("hex");
-      const owner = await prisma.owner.create({
+      const owner = await prisma.user.create({
         data: {
           email: data.email,
           password: hashedPassword,
-          restaurant: {
+          role: "owner",
+          owner: {
             create: {
-              name: data.restaurant.name,
-              slug: data.restaurant.slug,
-              location: data.restaurant.location,
-              description: data.restaurant.description,
-              isOpen: false,
+              restaurant: {
+                create: {
+                  name: data.restaurant.name,
+                  slug: data.restaurant.slug,
+                  location: data.restaurant.location,
+                  description: data.restaurant.description,
+                  isOpen: false,
+                },
+              },
             },
           },
+        },
+        include: {
+          owner: true,
         },
       });
       return owner;
@@ -48,34 +57,47 @@ class OwnerService {
   updateOwner = async (id: string, owner: OwnerUpdateDto) => {
     try {
       //   check if owner exists
-      const ownerData = await prisma.owner.findUnique({
+      const ownerData = await prisma.user.findUnique({
         where: {
           id: id,
         },
         include: {
-          restaurant: true,
+          owner: {
+            include: {
+              restaurant: true,
+            },
+          },
         },
       });
       if (!ownerData) {
         throw new Error("Owner not found");
       }
 
-      const updatedOwner = await prisma.owner.update({
+      const updatedOwner = await prisma.user.update({
         where: {
           id: id,
         },
         data: {
           email: owner.email ?? owner.email,
-          restaurant: {
+          owner: {
             update: {
-              name: owner.restaurant?.name ?? ownerData.restaurant.name,
-              slug: owner.restaurant?.slug ?? ownerData.restaurant.slug,
-              location:
-                owner.restaurant?.location ?? ownerData.restaurant?.location,
-              description:
-                owner.restaurant?.description ??
-                ownerData.restaurant?.description,
-              isOpen: owner.restaurant?.isOpen ?? ownerData.restaurant?.isOpen,
+              restaurant: {
+                update: {
+                  name:
+                    owner.restaurant?.name ?? ownerData.owner?.restaurant.name,
+                  slug:
+                    owner.restaurant?.slug ?? ownerData.owner?.restaurant.slug,
+                  location:
+                    owner.restaurant?.location ??
+                    ownerData.owner?.restaurant?.location,
+                  description:
+                    owner.restaurant?.description ??
+                    ownerData.owner?.restaurant?.description,
+                  isOpen:
+                    owner.restaurant?.isOpen ??
+                    ownerData.owner?.restaurant?.isOpen,
+                },
+              },
             },
           },
         },
@@ -84,113 +106,6 @@ class OwnerService {
     } catch (error) {
       console.error(error);
       throw new Error("Failed to update owner");
-    }
-  };
-  // get owner and restaurant data
-  getOwnerData = async (id: string, slug: string) => {
-    try {
-      // get owner and restaurant but exclude password and id
-
-      const ownerData = await prisma.owner.findUnique({
-        where: {
-          id: id,
-        },
-        select: {
-          email: true,
-          restaurant: {
-            select: {
-              name: true,
-              slug: true,
-              location: true,
-              description: true,
-              isOpen: true,
-            },
-          },
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
-      if (!ownerData) {
-        throw new CustomError("Owner not found", 404);
-      }
-
-      if (ownerData.restaurant.slug !== slug) {
-        throw new CustomError("You are not a owner of this restaurant", 401);
-      }
-      return ownerData;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // get all owners
-  getAllOwners = async () => {
-    try {
-      const owners = await prisma.owner.findMany({
-        include: {
-          restaurant: true,
-        },
-      });
-      return owners;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to get all owners");
-    }
-  };
-
-  // login owner
-  login = async (email: string, password: string, slug: string) => {
-    try {
-      const owner = await prisma.owner.findUnique({
-        where: {
-          email: email,
-        },
-        include: {
-          restaurant: true,
-        },
-      });
-      if (!owner) {
-        throw new CustomError("Owner not found", 404);
-      }
-
-      if (!owner.restaurant.allowService) {
-        throw new CustomError("Owner service is currently stopped", 403);
-      }
-
-      if (owner.restaurant.slug !== slug) {
-        throw new CustomError("You are not a owner of this restaurant", 401);
-      }
-      const hashedPassword = crypto
-        .createHash("sha1")
-        .update(password)
-        .digest("hex");
-      if (hashedPassword !== owner.password) {
-        throw new CustomError("Invalid password", 401);
-      }
-      // token
-      const SECRET_KEY: Secret = process.env.SECRET_KEY!;
-      const token = jwt.sign({ id: owner.id, role: "owner" }, SECRET_KEY, {
-        expiresIn: "7d",
-      });
-
-      const user = {
-        email: owner.email,
-        restaurant: {
-          name: owner.restaurant.name,
-          slug: owner.restaurant.slug,
-          location: owner.restaurant.location,
-          description: owner.restaurant.description,
-          isOpen: owner.restaurant.isOpen,
-        },
-
-        createdAt: owner.createdAt,
-        updatedAt: owner.updatedAt,
-      };
-
-      return { user, token, role: "owner" };
-    } catch (error) {
-      throw error;
     }
   };
 
