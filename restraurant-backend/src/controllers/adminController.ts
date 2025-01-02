@@ -1,11 +1,11 @@
 // express
 import { Request, Response } from "express";
 // adminService
-import AdminService from "../services/adminServices";
+import AdminService from "../services/admin.service";
 // auth
 import { CustomRequest, CustomJwtPayload } from "../middleware/auth.middleware";
 // import ownerService
-import OwnerService from "../services/ownerServices";
+import OwnerService from "../services/owner.services";
 
 const { createAdmin, updateAdminPassword, loginAdmin, getAdminById } =
   AdminService;

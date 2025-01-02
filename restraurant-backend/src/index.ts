@@ -23,8 +23,8 @@ import orderRouter from "./routes/orderRoute";
 // import cartRouter from "./routes/cartRoutes";
 import paymentRouter from "./routes/paymentRoutes";
 // import analyticsRouter from "./routes/analyticsRoute";
-import adminRouter from "./routes/adminRoutes";
-import ownerRouter from "./routes/ownerRoutes";
+// import adminRouter from "./routes/adminRoutes";
+// import ownerRouter from "./routes/ownerRoutes";
 import restaurantRouter from "./routes/restaurantRoutes";
 import userRouter from "./routes/user.route";
 
@@ -52,7 +52,7 @@ dotenv.config();
 // 1. test route
 app.use("/api/", testRouter);
 // 2. owner route
-app.use("/api/owner", ownerRouter);
+// app.use("/api/owner", ownerRouter);
 // 3. food route
 app.use("/api/food", foodRouter);
 // 4. Order route
@@ -64,7 +64,7 @@ app.use("/api/payment", paymentRouter);
 // // 7. owner analytics route
 // app.use("/api/owner", analyticsRouter);
 // 8. admin route
-app.use("/api/admin", adminRouter);
+// app.use("/api/admin", adminRouter);
 // 9. restaurant route
 app.use("/api/restaurant", restaurantRouter);
 // 10. user route

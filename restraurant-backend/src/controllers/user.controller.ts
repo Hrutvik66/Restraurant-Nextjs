@@ -5,8 +5,8 @@ import { CustomJwtPayload, CustomRequest } from "../middleware/auth.middleware";
 // Custom Error
 import CustomError from "../utils/CustomError";
 // services
-import ownerServices from "../services/ownerServices";
-import adminServices from "../services/adminServices";
+import ownerServices from "../services/owner.services";
+import adminServices from "../services/admin.service";
 
 class UserController {
   //   create owner
@@ -16,11 +16,8 @@ class UserController {
       const owner = await ownerServices.createOwner(data);
       res.status(201).json(owner);
     } catch (error) {
-      if (error instanceof CustomError) {
-        res.status(error.status).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
+      let err = error as CustomError;
+      res.status(err.status).json({ message: err.message });
     }
   };
 
@@ -31,11 +28,8 @@ class UserController {
       const admin = await adminServices.createAdmin(data);
       res.status(201).json(admin);
     } catch (error) {
-      if (error instanceof CustomError) {
-        res.status(error.status).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
+      let err = error as CustomError;
+      res.status(err.status).json({ message: err.message });
     }
   };
 
@@ -43,14 +37,13 @@ class UserController {
   loginUser = async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
-      const user = await ownerServices.loginUser(email, password);
-      res.status(200).json(user);
+      const {user, token} = await ownerServices.loginUser(email, password);
+      res.status(200).json({user, token});
     } catch (error) {
-      if (error instanceof CustomError) {
-        res.status(error.status).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
+      let err = error as CustomError;
+      console.log(err);
+      
+      res.status(err.status).json({ message: err.message });
     }
   };
 
@@ -65,11 +58,8 @@ class UserController {
       });
       res.status(200).json(updatedUser);
     } catch (error) {
-      if (error instanceof CustomError) {
-        res.status(error.status).json({ message: error.message });
-      } else {
-        res.status(500).json({ message: "Internal server error" });
-      }
+      let err = error as CustomError;
+      res.status(err.status).json({ message: err.message });
     }
   };
 }

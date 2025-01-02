@@ -14,7 +14,7 @@ class RestaurantService {
 
   // get restaurant by slug
   getRestaurantBySlug(slug: string) {
-    return prisma.restaurant.findUnique({
+    const restaurant = prisma.restaurant.findUnique({
       where: {
         slug,
       },
@@ -22,6 +22,10 @@ class RestaurantService {
         foodItems: true,
       },
     });
+    if (!restaurant) {
+      throw new CustomError("Restaurant not found", 404);
+    }
+    return restaurant;
   }
 
   // toggle owner service

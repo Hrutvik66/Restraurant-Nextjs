@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 // service
-import OwnerService from "../services/ownerServices";
+import OwnerService from "../services/owner.services";
 import { JwtPayload } from "jsonwebtoken";
 import { CustomJwtPayload, CustomRequest } from "../middleware/auth.middleware";
 // Custom Error

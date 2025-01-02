@@ -3,59 +3,70 @@ import prisma from "../prisma/client";
 import {
   OwnerCreationDto,
   OwnerUpdateDto,
-  OwnerDataDto,
 } from "../dto/ownerDto";
 // crypto
 import crypto from "crypto";
-import jwt, { Secret } from "jsonwebtoken";
 // customError
 import CustomError from "../utils/CustomError";
 import UserServices from "./user.service";
 
 class OwnerService extends UserServices {
   // create new owner and restraurant at same time
-  createOwner = async (data: any) => {
-    try {
-      console.log(data);
+  createOwner = async (data: OwnerCreationDto) => {
+    // hash password
+    const hashedPassword = crypto
+      .createHash("sha1")
+      .update(data.password)
+      .digest("hex");
 
-      // hash password
-      const hashedPassword = crypto
-        .createHash("sha1")
-        .update(data.password)
-        .digest("hex");
-      const owner = await prisma.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          role: "owner",
-          owner: {
-            create: {
-              restaurant: {
-                create: {
-                  name: data.restaurant.name,
-                  slug: data.restaurant.slug,
-                  location: data.restaurant.location,
-                  description: data.restaurant.description,
-                  isOpen: false,
-                },
+    // check if owner already exists
+    const owner = await prisma.user.findUnique({
+      where: {
+        email: data.email,
+      },
+    });
+    if (owner) {
+      throw new CustomError("Owner already exists", 404);
+    }
+
+    // check if restaurant slug is unique
+    const restaurant = await prisma.restaurant.findUnique({
+      where: {
+        slug: data.restaurant.slug,
+      },
+    });
+    if (restaurant) {
+      throw new CustomError("Restaurant slug already exists", 404);
+    }
+
+    const newOwner = await prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        role: "owner",
+        owner: {
+          create: {
+            restaurant: {
+              create: {
+                name: data.restaurant.name,
+                slug: data.restaurant.slug,
+                location: data.restaurant.location,
+                description: data.restaurant.description,
+                isOpen: false,
               },
             },
           },
         },
-        include: {
-          owner: true,
-        },
-      });
-      return owner;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to create owner");
-    }
+      },
+      include: {
+        owner: true,
+      },
+    });
+    return newOwner;
   };
 
   // update owner and restaurant at same time
   updateOwner = async (id: string, owner: OwnerUpdateDto) => {
-    try {
       //   check if owner exists
       const ownerData = await prisma.user.findUnique({
         where: {
@@ -70,7 +81,7 @@ class OwnerService extends UserServices {
         },
       });
       if (!ownerData) {
-        throw new Error("Owner not found");
+        throw new CustomError("Owner not found", 404);
       }
 
       const updatedOwner = await prisma.user.update({
@@ -102,11 +113,10 @@ class OwnerService extends UserServices {
           },
         },
       });
+      if (!updatedOwner) {
+        throw new CustomError("Error updating owner", 500);
+      }
       return updatedOwner;
-    } catch (error) {
-      console.error(error);
-      throw new Error("Failed to update owner");
-    }
   };
 
   // toggle Restaurant open

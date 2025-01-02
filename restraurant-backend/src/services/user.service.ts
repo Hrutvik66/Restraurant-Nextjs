@@ -1,52 +1,10 @@
 import prisma from "../prisma/client";
-import { CreateUserDto, UpdatePasswordDto } from "../dto/user.dto";
+import { UpdatePasswordDto } from "../dto/user.dto";
 import crypto from "crypto";
 import jwt, { Secret } from "jsonwebtoken";
+import CustomError from "../utils/CustomError";
 
 class UserServices {
-  // create new user also manage the owner and admin
-  createUser = async (data: CreateUserDto) => {
-    let user;
-    const hashedPassword = crypto
-      .createHash("sha1")
-      .update(data.password)
-      .digest("hex");
-    if (data.role === "owner") {
-      user = await prisma.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          role: data.role,
-          owner: {
-            create: {
-              restaurant: {
-                create: {
-                  name: data.owner?.restaurant.name ?? "",
-                  slug: data.owner?.restaurant.slug ?? "",
-                  location: data.owner?.restaurant.location ?? "",
-                  description: data.owner?.restaurant.description ?? "",
-                  isOpen: false,
-                },
-              },
-            },
-          },
-        },
-      });
-    } else {
-      user = await prisma.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          role: data.role,
-          admin: {
-            create: {},
-          },
-        },
-      });
-    }
-    return user;
-  };
-
   // login user
   loginUser = async (email: string, password: string) => {
     const hashedPassword = crypto
@@ -63,14 +21,14 @@ class UserServices {
       },
     });
     if (!user) {
-      throw new Error("User not found");
+      throw new CustomError("User not found", 404);
     }
     if (user.password !== hashedPassword) {
-      throw new Error("Invalid password");
+      throw new CustomError("Invalid password", 401);
     }
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET as Secret
+      process.env.SECRET_KEY as Secret
     );
     return { user, token };
   };
@@ -85,7 +43,7 @@ class UserServices {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      throw new CustomError("User not found", 404);
     }
 
     // check if the current password matches the provided password
@@ -94,7 +52,7 @@ class UserServices {
       user.password !==
         crypto.createHash("sha256").update(data.password).digest("hex")
     ) {
-      throw new Error("Invalid current password");
+      throw new CustomError("Invalid current password", 401);
     }
 
     // hashing the new password if provided
@@ -111,6 +69,10 @@ class UserServices {
         password: hashedNewPassword,
       },
     });
+
+    if (!updatedUser) {
+      throw new CustomError("Error updating user", 404);
+    }
 
     return updatedUser;
   };
@@ -131,7 +93,7 @@ class UserServices {
       },
     });
     if (!user) {
-      throw new Error("User not found");
+      throw new CustomError("User not found", 404);
     }
     return user;
   };
@@ -152,7 +114,7 @@ class UserServices {
       },
     });
     if (!user) {
-      throw new Error("User not found");
+      throw new CustomError("User not found", 404);
     }
     return user;
   };

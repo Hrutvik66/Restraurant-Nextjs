@@ -22,21 +22,6 @@ export interface UserDto {
   updatedAt: Date;
 }
 
-export interface CreateUserDto {
-  email: string;
-  password: string;
-  role: string;
-  owner?: {
-    restaurant: {
-      name: string;
-      slug: string;
-      location?: string; // Optional
-      description?: string; // Optional
-    };
-  };
-  admin?: {};
-}
-
 export interface UpdatePasswordDto {
   email?: string;
   password?: string;
