@@ -51,7 +51,7 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
-      router.push(`/admin/`);
+      router.push(`/login`);
     }
   };
   return (
@@ -171,52 +171,50 @@ export default function AdminLayout({
   }, [pathname]);
 
   return (
-    <AuthProvider>
-      <div className="flex h-screen bg-gray-100">
-        {/* Desktop sidebar */}
-        <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
+    <div className="flex h-screen bg-gray-100">
+      {/* Desktop sidebar */}
+      <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
 
-        {/* Mobile sidebar */}
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              className="md:hidden p-2 absolute right-4 top-4 z-50"
-            >
-              <Menu size={24} />
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="p-0 bg-gray-900 text-gray-100 w-64"
+      {/* Mobile sidebar */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            className="md:hidden p-2 absolute right-4 top-4 z-50"
           >
-            <Sidebar collapsed={false} setSidebarOpen={setSidebarOpen} />
-          </SheetContent>
-        </Sheet>
+            <Menu size={24} />
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          className="p-0 bg-gray-900 text-gray-100 w-64"
+        >
+          <Sidebar collapsed={false} setSidebarOpen={setSidebarOpen} />
+        </SheetContent>
+      </Sheet>
 
-        {/* Main content */}
-        <div className="flex flex-col flex-1 overflow-hidden z-[49]">
-          <header className="bg-white shadow-md p-4 pt-7 flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800 ml-4">
-              {restaurantData?.name}
-            </h2>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden md:flex"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight size={24} />
-              ) : (
-                <ChevronLeft size={24} />
-              )}
-            </Button>
-          </header>
-          <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-        </div>
+      {/* Main content */}
+      <div className="flex flex-col flex-1 overflow-hidden z-[49]">
+        <header className="bg-white shadow-md p-4 pt-7 flex justify-between items-center">
+          <h2 className="text-2xl font-semibold text-gray-800 ml-4">
+            {restaurantData?.name}
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden md:flex"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight size={24} />
+            ) : (
+              <ChevronLeft size={24} />
+            )}
+          </Button>
+        </header>
+        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
       <Toaster />
-    </AuthProvider>
+    </div>
   );
 }

@@ -38,7 +38,7 @@ const AddRestaurantPage = () => {
     try {
       const token = Cookies.get("token");
       const response = await makeRequest({
-        url: "/api/owner",
+        url: "/api/user/owner/register",
         method: "POST",
         data: {
           email: formData.email,
@@ -76,7 +76,7 @@ const AddRestaurantPage = () => {
   }
 
   if (!isAuthenticated) {
-    router.push("/admin/login");
+    router.push("/login");
     return null;
   }
 

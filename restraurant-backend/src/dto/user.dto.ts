@@ -23,7 +23,6 @@ export interface UserDto {
 }
 
 export interface UpdatePasswordDto {
-  email?: string;
-  password?: string;
-  newPassword?: string; // New password provided by user
+  password: string;
+  newPassword: string; // New password provided by user
 }

@@ -126,7 +126,7 @@ export default function RestaurantsPage() {
 
   useEffect(() => {
     if (!isAuthenticated && !isAuthLoading) {
-      router.push("/admin/");
+      router.push("/login");
     }
   }, [isAuthenticated, router, isAuthLoading]);
 
@@ -313,7 +313,7 @@ export default function RestaurantsPage() {
                       <p>
                         <strong>Email:</strong> {restaurant.owner.email}
                       </p>
-                      <p>
+                      <div>
                         <strong>Service:</strong>
                         <Badge
                           className={`${
@@ -324,7 +324,7 @@ export default function RestaurantsPage() {
                         >
                           {restaurant.allowService ? "Allowed" : "Disallowed"}
                         </Badge>
-                      </p>
+                      </div>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button

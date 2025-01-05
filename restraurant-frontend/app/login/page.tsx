@@ -6,27 +6,29 @@ import { useAuthContext } from "@/context/auth-context";
 // next
 import { useRouter } from "next/navigation";
 
-const AdminLogin = () => {
-  const { isAuthenticated, isAuthLoading } = useAuthContext();
+const Login = () => {
+  const { isAuthenticated, isAuthLoading, user } = useAuthContext();
   const router = useRouter();
 
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;
   }
 
+  // if user is already authenticated, redirect to admin dashboard if user is admin and owner dashboard if user is owner
+  console.log("isAuthenticated", isAuthenticated);
   if (isAuthenticated) {
-    let last_visted = localStorage.getItem("pathname") ?? `/admin/analysis`;
-    if (last_visted === `/admin`) {
-      last_visted = `/admin/analysis`;
-      localStorage.setItem("pathname", last_visted);
+    const role = user?.role;
+    if (role === "admin") {
+      router.push("/admin/restaurants");
+    } else if (role === "owner") {
+      router.push(`/${user?.owner?.restaurant.slug}/owner/analytics`);
     }
-    router.push(last_visted);
   }
   return (
     <div className="min-h-screen flex justify-center items-center bg-orange-100">
-      <LoginPage role="" />
+      <LoginPage />
     </div>
   );
 };
 
-export default AdminLogin;
+export default Login;

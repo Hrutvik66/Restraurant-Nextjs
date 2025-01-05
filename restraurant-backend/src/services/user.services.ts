@@ -5,21 +5,15 @@ import jwt, { Secret } from "jsonwebtoken";
 import CustomError from "../utils/CustomError";
 
 class UserServices {
+  //
+
   // login user
   loginUser = async (email: string, password: string) => {
     const hashedPassword = crypto
-      .createHash("sha1")
+      .createHash("sha256")
       .update(password)
       .digest("hex");
-    const user = await prisma.user.findUnique({
-      where: {
-        email: email,
-      },
-      include: {
-        owner: true,
-        admin: true,
-      },
-    });
+    const user = await this.getUserDataByEmail(email);
     if (!user) {
       throw new CustomError("User not found", 404);
     }
@@ -28,20 +22,16 @@ class UserServices {
     }
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.SECRET_KEY as Secret
+      process.env.SECRET_KEY as Secret,
+      { expiresIn: "24h" }
     );
     return { user, token };
   };
 
   // update an user password with the new password
-  updatePassword = async (data: UpdatePasswordDto) => {
+  updatePassword = async (data: UpdatePasswordDto, id: string) => {
     // check if the email exists in the database
-    const user = await prisma.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
-
+    const user = await this.getUserDataById(id);
     if (!user) {
       throw new CustomError("User not found", 404);
     }
@@ -63,7 +53,7 @@ class UserServices {
     // update the admin in the database
     const updatedUser = await prisma.user.update({
       where: {
-        email: data.email,
+        id: id,
       },
       data: {
         password: hashedNewPassword,
@@ -78,7 +68,7 @@ class UserServices {
   };
 
   // get user data by id
-  getUserData = async (id: string) => {
+  getUserDataById = async (id: string) => {
     const user = await prisma.user.findUnique({
       where: {
         id: id,

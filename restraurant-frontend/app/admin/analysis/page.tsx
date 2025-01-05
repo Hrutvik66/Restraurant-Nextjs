@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
+import { useAuthContext } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 const data = [
   {
@@ -27,7 +29,15 @@ const data = [
   },
 ];
 
-export default function AnalysisPage() {
+const AnalysisPage = () => {
+  const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated && !isAuthLoading) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router, isAuthLoading]);
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Analysis Dashboard</h1>
@@ -105,4 +115,6 @@ export default function AnalysisPage() {
       </Card>
     </div>
   );
-}
+};
+
+export default AnalysisPage;

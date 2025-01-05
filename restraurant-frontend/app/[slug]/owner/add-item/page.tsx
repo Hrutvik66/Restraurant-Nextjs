@@ -70,7 +70,7 @@ const ManageFoodItems = () => {
   // auth check useEffect
   useEffect(() => {
     if (!isAuthenticated && !isAuthLoading) {
-      router.push(`/${slug}/owner/`);
+      router.push(`/login`);
     }
   }, [isAuthenticated, slug, router, isAuthLoading]);
 

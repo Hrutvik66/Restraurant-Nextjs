@@ -1,5 +1,6 @@
 import jwt, { Secret, JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import CustomError from "../utils/CustomError";
 
 const SECRET_KEY: Secret = process.env.SECRET_KEY!;
 
@@ -25,6 +26,6 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (err) {
-    res.status(401).send({ message: "Please authenticate" });
+    res.status(401).json({ message: "Please authenticate: Session expired" });
   }
 };

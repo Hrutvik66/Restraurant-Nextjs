@@ -1,5 +1,5 @@
 // react
-import { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext, JSX } from "react";
 // js-cookie
 import Cookies from "js-cookie";
 // toast
@@ -11,12 +11,15 @@ import useApiCall from "@/hooks/use-apicall";
 
 interface UserType {
   email: string;
-  restaurant: {
-    name: string;
-    slug: string;
-    location: string;
-    description: string;
-    isOpen: boolean;
+  role: string;
+  owner: {
+    restaurant: {
+      name: string;
+      slug: string;
+      location: string;
+      description: string;
+      isOpen: boolean;
+    };
   };
   createdAt: string;
   updatedAt: string;
@@ -77,15 +80,11 @@ export const AuthProvider = ({
       try {
         setIsAuthLoading(true);
         const token = Cookies.get("token");
-        const role = Cookies.get("role");
         const response = await makeRequest({
-          url: `/api/${role}/id`,
+          url: `/api/user/id`,
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
-          },
-          params: {
-            slug,
           },
         });
         if (response && response.status === 200) {

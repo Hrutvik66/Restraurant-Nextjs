@@ -1,18 +1,12 @@
-//services/adminService
-
 // prisma
 import prisma from "../prisma/client";
 // crypto module to hash password
 import crypto from "crypto";
 // admin dto
-import {
-  CreateAdminDto,
-} from "../dto/adminDto";
-// jwt
-import jwt, { Secret } from "jsonwebtoken";
+import { CreateAdminDto } from "../dto/adminDto";
 // dotenv
 import dotenv from "dotenv";
-import UserServices from "./user.service";
+import UserServices from "./user.services";
 import CustomError from "../utils/CustomError";
 
 dotenv.config();
@@ -25,7 +19,7 @@ class AdminService extends UserServices {
       .createHash("sha256")
       .update(data.password)
       .digest("hex");
-    
+
     // check if admin already exists
     const admin = await prisma.user.findUnique({
       where: {

@@ -4,7 +4,13 @@ import Link from "next/link";
 import React from "react";
 import { Menu, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import CartSidebar from "./CartSidebar";
 import { useRestaurantContext } from "@/context/restaurant-context";
 import Loader from "./Loader";
@@ -62,6 +68,8 @@ const Navbar = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[200px] sm:w-[300px]">
+                <SheetTitle>Menu</SheetTitle>
+                <SheetDescription>Choose an option</SheetDescription>
                 <nav className="flex flex-col space-y-4 mt-8">
                   <NavItems />
                 </nav>

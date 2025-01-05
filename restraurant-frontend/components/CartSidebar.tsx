@@ -6,6 +6,7 @@ import React, { useState } from "react";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -49,7 +50,11 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         {children || (
-          <Button variant="ghost" size="icon" className="relative hidden md:flex">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative hidden md:flex"
+          >
             <ShoppingCart className="h-6 w-6" />
             {totalItems > 0 && (
               <span className="absolute -top-0 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -62,6 +67,9 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
       <SheetContent className="w-full sm:max-w-md overflow-auto">
         <SheetHeader>
           <SheetTitle>Your Cart</SheetTitle>
+          <SheetDescription>
+            {filteredCartItems.length} items in your cart
+          </SheetDescription>
         </SheetHeader>
         <div className="mt-8 flex flex-col">
           <ScrollArea className="flex-grow">

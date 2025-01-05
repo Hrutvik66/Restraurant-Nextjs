@@ -3,7 +3,7 @@
 // React
 import React, { useState } from "react";
 // Next
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 // shad-cn ui component
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ import Cookies from "js-cookie";
 import CustomErrorInterface from "../lib/CustomErrorInterface";
 import { useAuthContext } from "@/context/auth-context";
 
-const LoginPage = ({ role }: { role: string }) => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,7 +47,6 @@ const LoginPage = ({ role }: { role: string }) => {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const router = useRouter();
   const { makeRequest } = useApiCall();
-  const { slug } = useParams();
   const { login } = useAuthContext();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -56,31 +55,31 @@ const LoginPage = ({ role }: { role: string }) => {
     setError("");
     try {
       const response = await makeRequest({
-        url: `/api/${role.toLowerCase()}/login`,
+        url: `/api/user/login`,
         method: "POST",
         data: {
           email,
           password,
         },
-        params: {
-          slug,
-        },
       });
       console.log("response", response);
 
       if (response && response.status === 200) {
-        Cookies.set("token", response.data.token, { expires: 7 });
-        Cookies.set("role", response.data.role, { expires: 7 });
+        Cookies.set("token", response.data.token);
+        Cookies.set("role", response.data.user.role);
         login(response.data.user);
+        setTimeout(() => {}, 3000);
         toast({
           variant: "default",
           title: "Login Successful",
           description: response.data.message,
         });
-        if (role === "Owner") {
-          router.push(`/${slug}/owner/analytics`);
-        } else if (role === "Admin") {
-          router.push(`admin/restaurants`);
+        if (response.data.user.role === "owner") {
+          router.push(
+            `/${response.data.user.owner.restaurant.slug}/owner/analytics`
+          );
+        } else if (response.data.user.role === "admin") {
+          router.push(`/admin/restaurants`);
         }
       }
     } catch (err) {
@@ -113,10 +112,9 @@ const LoginPage = ({ role }: { role: string }) => {
     <div className="flex items-center justify-center bg-gray-100">
       <Card className="w-[350px]">
         <CardHeader>
-          <CardTitle>{role} Login</CardTitle>
+          <CardTitle>Login</CardTitle>
           <CardDescription>
-            Enter your email and password to access the {role.toLowerCase()}{" "}
-            panel.
+            Enter your email and password to access the panel.
           </CardDescription>
         </CardHeader>
         <CardContent>

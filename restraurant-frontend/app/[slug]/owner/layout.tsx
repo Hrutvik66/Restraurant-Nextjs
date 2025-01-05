@@ -181,7 +181,7 @@ export default function AdminLayout({
   const handleOpenChange = async (slug: string, checked: boolean) => {
     try {
       const response = await makeRequest({
-        url: `/api/owner/toggle`,
+        url: `/api/user/owner/toggle-restaurant-status`,
         method: "PATCH",
         data: {
           isOpen: checked,
@@ -213,7 +213,6 @@ export default function AdminLayout({
   };
 
   return (
-    <AuthProvider>
     <div className="flex h-screen bg-gray-100">
       {/* Desktop sidebar */}
       <Sidebar className="hidden md:flex" collapsed={sidebarCollapsed} />
@@ -266,8 +265,7 @@ export default function AdminLayout({
         </header>
         <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
-    </div>
       <Toaster />
-    </AuthProvider>
+    </div>
   );
 }

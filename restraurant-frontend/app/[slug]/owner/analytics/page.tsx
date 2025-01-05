@@ -37,15 +37,14 @@ const topSellingItems = [
 
 const AdminAnalytics = () => {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
-  const { slug } = useParams();
   const router = useRouter();
 
   // auth check useEffect
   useEffect(() => {
     if (!isAuthenticated && !isAuthLoading) {
-      router.push(`/${slug}/owner/`);
+      router.push(`/login`);
     }
-  }, [isAuthenticated, slug, router, isAuthLoading]);
+  }, [isAuthenticated, router, isAuthLoading]);
 
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;
