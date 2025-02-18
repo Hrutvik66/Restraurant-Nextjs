@@ -6,8 +6,6 @@ import axios from "axios";
 import prisma from "../prisma/client";
 // orderServices
 import OrderService from "../services/orderServices";
-// socket io
-import { io } from "../index";
 import restaurantServices from "../services/restaurantServices";
 
 // order interface
@@ -109,9 +107,6 @@ class PaymentController {
         },
       });
 
-      // Emit real-time event to clients
-      io.emit("orderCreated", order); // Send the new order to all connected clients
-
       // Redirect user to PhonePe payment
       axios
         .request(options)
@@ -184,9 +179,6 @@ class PaymentController {
             },
           });
 
-          // Emit event to update clients in real-time
-          io.emit("orderStatusUpdated", updatedOrder); // Notify all clients of the status change
-
           res.redirect(
             `http://localhost:3000/${updatedOrder.restaurant.slug}/user/checkout/payment-status?transactionId=${merchantTransactionId}`
           );
@@ -208,9 +200,6 @@ class PaymentController {
             where: { id: order.transaction.order.id },
             data: { status: "canceled" },
           });
-
-          // Emit event to update clients in real-time
-          io.emit("orderStatusUpdated", updatedOrder); // Notify all clients of the status change
 
           const url = `http://localhost:5173/failure`;
           return res.redirect(url);

@@ -25,7 +25,7 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="bg-white shadow-sm relative">
+      <header className="bg-white shadow-xs relative">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold text-orange-600">
             <Image
@@ -77,7 +77,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="flex-grow">
+      <main className="grow">
         {/* Hero Section */}
         <section className="bg-orange-50 py-12 sm:py-20 min-h-[calc(100vh-4rem)] flex justify-center items-center">
           <div className="container mx-auto px-4 text-center">
@@ -175,7 +175,7 @@ export default function LandingPage() {
                     <Input
                       id="name"
                       placeholder="Your Name"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-orange-300 focus:ring-3 focus:ring-orange-200 focus:ring-opacity-50"
                     />
                   </div>
                   <div>
@@ -189,7 +189,7 @@ export default function LandingPage() {
                       id="email"
                       type="email"
                       placeholder="you@example.com"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-xs focus:border-orange-300 focus:ring-3 focus:ring-orange-200 focus:ring-opacity-50"
                     />
                   </div>
                   <div>
@@ -202,7 +202,7 @@ export default function LandingPage() {
                     <textarea
                       id="message"
                       rows={4}
-                      className="mt-1 p-3 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-300 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                      className="mt-1 p-3 block w-full rounded-md border-gray-300 shadow-xs focus:border-orange-300 focus:ring-3 focus:ring-orange-200 focus:ring-opacity-50"
                       placeholder="How can we help you?"
                     ></textarea>
                   </div>

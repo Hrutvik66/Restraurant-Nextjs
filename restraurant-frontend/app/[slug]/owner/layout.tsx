@@ -83,7 +83,7 @@ const Sidebar = ({
         </div>
         {/* Side bar menu items */}
         {isAuthenticated && (
-          <nav className="flex-grow">
+          <nav className="grow">
             <ul className={`${collapsed ? "" : "space-y-2"} px-2 w-full`}>
               {navItems.map((item) => (
                 <li key={item.href}>
@@ -236,7 +236,7 @@ export default function AdminLayout({
       </Sheet>
 
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden z-[49]">
+      <div className="flex flex-col flex-1 overflow-hidden z-49">
         <header className="bg-white shadow-md p-4 pt-5 md:pt-7 flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800 ml-4">
             {restaurantData?.name}
@@ -263,7 +263,7 @@ export default function AdminLayout({
             </Button>
           </div>
         </header>
-        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+        <main className="flex-1 md:p-8 p-4 overflow-y-auto">{children}</main>
       </div>
       <Toaster />
     </div>

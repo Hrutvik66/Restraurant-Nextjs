@@ -58,7 +58,7 @@ export default function ItemPage() {
     menuItems.find((item) => item.id === parseInt(id)) || menuItems[6];
   return (
     <div className="flex flex-col bg-orange-50 pb-8">
-      <main className="flex-grow container mx-auto py-8 px-4 pt-24">
+      <main className="grow container mx-auto py-8 px-4 pt-24">
         <Button
           variant="ghost"
           asChild

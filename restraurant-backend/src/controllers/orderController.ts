@@ -3,8 +3,6 @@ import { Request, Response } from "express";
 
 // orderService
 import OrderService from "../services/orderServices";
-// socket io server
-import { io } from "../index"; // Import the io instance
 
 const {
   getOrderById,
@@ -20,7 +18,7 @@ class OrderController {
       const slug = req.query.slug as string;
       const order = await getOrderById(req.params.id, slug);
       if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+        res.status(404).json({ message: "Order not found" });
       }
       res.status(200).json(order);
     } catch (error) {
@@ -37,7 +35,7 @@ class OrderController {
         slug
       );
       if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+        res.status(404).json({ message: "Order not found" });
       }
       console.log("order", order);
 
@@ -66,10 +64,8 @@ class OrderController {
         req.query.slug as string
       );
       if (!updatedOrder) {
-        return res.status(404).json({ message: "Order not found" });
+        res.status(404).json({ message: "Order not found" });
       }
-      // Emit event to update clients in real-time
-      io.emit("orderStatusUpdated", updatedOrder); // Notify all clients of the status change
 
       res.status(200).json({
         message: "Order status updated successfully",

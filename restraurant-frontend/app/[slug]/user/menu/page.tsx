@@ -14,7 +14,6 @@ import { Minus, Plus, Sheet, ShoppingBag } from "lucide-react";
 import { FoodItem, useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import Loader from "@/components/Loader";
-import { useSocket } from "@/context/socket-context";
 import InfoCard from "@/components/InfoCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CartSidebar from "@/components/CartSidebar";
@@ -41,7 +40,6 @@ const MenuPage = () => {
   const { cartItems, addItemToCart, updateItemFromCart, getTotalPrice } =
     useCart();
   const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
-  const { socket } = useSocket();
 
   useEffect(() => {
     if (restaurantData) {
@@ -51,38 +49,6 @@ const MenuPage = () => {
       setAvailableItems(availableData);
     }
   }, [restaurantData, isRestaurantLoading]);
-
-  useEffect(() => {
-    const updateFoodItems = (foodItem: FoodItem) => {
-      setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);
-      if (!availableItems.find((item) => item.id === foodItem.id)) {
-        setAvailableItems((prevItems) => [...prevItems, foodItem]);
-      }
-      const updatedItems: FoodItem[] = availableItems.map((dataItem) =>
-        dataItem.id === foodItem.id ? foodItem : dataItem
-      );
-      setAvailableItems(updatedItems);
-    };
-
-    if (socket) {
-      socket.on("foodItemAdded", (foodItem) => {
-        updateFoodItems(foodItem);
-      });
-      socket.on("foodItemDeleted", (foodItem) => {
-        updateFoodItems(foodItem);
-      });
-      socket.on("foodItemUpdated", (foodItem) => {
-        updateFoodItems(foodItem);
-      });
-      socket.on("foodItemStatusUpdated", (foodItem) => {
-        updateFoodItems(foodItem);
-      });
-
-      return () => {
-        socket.disconnect();
-      };
-    }
-  }, [availableItems, setRestaurantRefreshKey, socket]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
@@ -106,7 +72,7 @@ const MenuPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <main className="flex-grow container px-4 py-8 pt-20">
+      <main className="grow container px-4 py-8 pt-20">
         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center text-gray-900">
           Our Menu
         </h1>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -16,6 +16,9 @@ import { useAuthContext } from "@/context/auth-context";
 import InfoCard from "@/components/InfoCard";
 import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
+import useApiCall from "@/hooks/use-apicall";
+import Cookies from "js-cookie";
+import { useRestaurantContext } from "@/context/restaurant-context";
 
 const salesData = [
   { name: "Mon", sales: 4000 },
@@ -37,7 +40,10 @@ const topSellingItems = [
 
 const AdminAnalytics = () => {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
+  const { restaurantData } = useRestaurantContext();
+  const { makeRequest } = useApiCall();
   const router = useRouter();
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
 
   // auth check useEffect
   useEffect(() => {
@@ -45,6 +51,33 @@ const AdminAnalytics = () => {
       router.push(`/login`);
     }
   }, [isAuthenticated, router, isAuthLoading]);
+
+  // featch analystics from backend api
+  useEffect(() => {
+    const token = Cookies.get("token");
+    const fetchAnalytics = async () => {
+      const response = await makeRequest({
+        url: "/api/owner/analytics",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("analytics", response);
+      if (response && response.status === 200) {
+        // update data.topSellingItems array of object with food itesm from restaurant data
+        response.data.topSellingItems.forEach((item: any) => {
+          restaurantData?.foodItems.forEach((food: any) => {
+            if (food.id === item.foodItemId) {
+              // add all data from food to item
+              item.name = food.name;
+              item.price = food.price;
+            }
+          });
+        });
+
+        setAnalyticsData(response.data);
+      }
+    };
+    fetchAnalytics();
+  }, []);
 
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;
@@ -54,7 +87,7 @@ const AdminAnalytics = () => {
       <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
 
       {isAuthenticated ? (
-        <div>
+        <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -63,10 +96,12 @@ const AdminAnalytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">₹45,231.89</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold">
+                  ₹{analyticsData?.totalRevenue ?? 0}
+                </div>
+                {/* <p className="text-xs text-muted-foreground">
                   +20.1% from last month
-                </p>
+                </p> */}
               </CardContent>
             </Card>
             <Card>
@@ -76,10 +111,12 @@ const AdminAnalytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+2350</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold">
+                  {analyticsData?.ordersCount ?? 0}
+                </div>
+                {/* <p className="text-xs text-muted-foreground">
                   +180.1% from last month
-                </p>
+                </p> */}
               </CardContent>
             </Card>
             <Card>
@@ -89,13 +126,15 @@ const AdminAnalytics = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">45</div>
-                <p className="text-xs text-muted-foreground">
+                <div className="text-2xl font-bold">
+                  {analyticsData?.menuItemsCount ?? 0}
+                </div>
+                {/* <p className="text-xs text-muted-foreground">
                   +3 new items this week
-                </p>
+                </p> */}
               </CardContent>
             </Card>
-            <Card>
+            {/* <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   Customer Satisfaction
@@ -107,26 +146,26 @@ const AdminAnalytics = () => {
                   Based on 500 reviews
                 </p>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle>Weekly Sales</CardTitle>
             </CardHeader>
             <CardContent className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
+                <BarChart data={analyticsData?.salesData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="sales" fill="#8884d8" />
+                  <Bar dataKey="sales Revenue" fill="#8884d8" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+          </Card> */}
 
           <Card>
             <CardHeader>
@@ -134,12 +173,19 @@ const AdminAnalytics = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {topSellingItems.map((item, index) => (
-                  <li key={index} className="flex justify-between items-center">
-                    <span>{item.name}</span>
-                    <span className="font-semibold">{item.sales} sold</span>
-                  </li>
-                ))}
+                {analyticsData?.topSellingItems.map(
+                  (item: any, index: number) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <span>{item.name}</span>
+                      <span className="font-semibold">
+                        {item.quantitySold} sold
+                      </span>
+                    </li>
+                  )
+                )}
               </ul>
             </CardContent>
           </Card>

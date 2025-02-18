@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/popover";
 import useFetch from "@/hooks/use-fetch";
 import useApiCall from "@/hooks/use-apicall";
-import { useSocket } from "@/context/socket-context";
 import CustomErrorInterface from "../../../../lib/CustomErrorInterface";
 import Cookies from "js-cookie";
 import { useParams, useRouter } from "next/navigation";
@@ -135,7 +134,6 @@ const OrdersPage = () => {
   const { slug } = useParams();
   const { apiData, setRefreshKey } = useFetch(`/api/order/?slug=${slug}`);
   const { makeRequest, loading } = useApiCall();
-  const { socket } = useSocket();
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [statusFilter, setStatusFilter] = useState("New");
@@ -144,7 +142,6 @@ const OrdersPage = () => {
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
-  // console.log(apiData);
 
   interface APIType {
     id: string;
@@ -173,38 +170,6 @@ const OrdersPage = () => {
     );
     return filtered;
   }, [dateFilter, orders, statusFilter, transactionStatusFilter]);
-
-  useEffect(() => {
-    if (socket) {
-      const handleOrderCreated = (newOrder: Order) => {
-        setOrders((prevOrders) => [...prevOrders, newOrder]);
-        toast({
-          title: "New Order Received",
-          description: `Order #${newOrder.id} has been created.`,
-        });
-      };
-
-      const handleOrderStatusUpdated = (updatedOrder: Order) => {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
-        );
-        toast({
-          title: "Order Status Updated",
-          description: `Order #${updatedOrder.id} status changed to ${updatedOrder.status}.`,
-        });
-      };
-
-      socket.on("orderCreated", handleOrderCreated);
-      socket.on("orderStatusUpdated", handleOrderStatusUpdated);
-
-      return () => {
-        socket.off("orderCreated", handleOrderCreated);
-        socket.off("orderStatusUpdated", handleOrderStatusUpdated);
-      };
-    }
-  }, [socket]);
 
   // auth check useEffect
   useEffect(() => {
@@ -455,7 +420,7 @@ const OrdersPage = () => {
                       <p>
                         <strong>Total:</strong> ₹{order.total}
                       </p>
-                      <p>
+                      <div>
                         <strong>Transaction Status:</strong>
                         <Badge
                           className={`${getTransactionStatusColor(
@@ -464,7 +429,7 @@ const OrdersPage = () => {
                         >
                           {order.transactionStatus}
                         </Badge>
-                      </p>
+                      </div>
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button

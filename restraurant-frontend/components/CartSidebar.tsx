@@ -72,13 +72,13 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ children }) => {
           </SheetDescription>
         </SheetHeader>
         <div className="mt-8 flex flex-col">
-          <ScrollArea className="flex-grow">
+          <ScrollArea className="grow">
             {filteredCartItems.map((item) => (
               <div
                 key={item.id}
                 className="flex justify-between items-center py-4"
               >
-                <div className="flex-grow">
+                <div className="grow">
                   <h3 className="font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-500">₹{item.price} each</p>
                 </div>

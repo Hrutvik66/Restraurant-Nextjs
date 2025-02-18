@@ -39,7 +39,7 @@ const Sidebar = ({
   const { isAuthenticated, logout } = useAuthContext();
 
   const navItems = [
-    { href: "/admin/analysis", label: "Analysis", icon: BarChart },
+    // { href: "/admin/analysis", label: "Analysis", icon: BarChart },
     { href: "/admin/restaurants", label: "Restaurants", icon: List },
     {
       href: "/admin/add_restaurant",
@@ -72,7 +72,7 @@ const Sidebar = ({
         </div>
         {/* Side bar menu items */}
         {isAuthenticated && (
-          <nav className="flex-grow">
+          <nav className="grow">
             <ul className={`${collapsed ? "" : "space-y-2"} px-2 w-full`}>
               {navItems.map((item) => (
                 <li key={item.href}>
@@ -194,7 +194,7 @@ export default function AdminLayout({
       </Sheet>
 
       {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-hidden z-[49]">
+      <div className="flex flex-col flex-1 overflow-hidden z-49">
         <header className="bg-white shadow-md p-4 pt-7 flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800 ml-4">
             {restaurantData?.name}

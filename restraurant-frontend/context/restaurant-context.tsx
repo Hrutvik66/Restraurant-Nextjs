@@ -81,17 +81,6 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
         }
       };
       fetchRestaurantData();
-
-      // Optional: Set up real-time updates if needed
-      // const socket = setupWebSocket(slug);
-      // socket.on("restaurantUpdated", (data) => {
-      //    setRestaurantData(data);
-      // });
-
-      return () => {
-        // Cleanup socket or any other subscriptions if added
-        // socket.disconnect();
-      };
     }
   }, [slug, restaurantRefreshKey]);
 
