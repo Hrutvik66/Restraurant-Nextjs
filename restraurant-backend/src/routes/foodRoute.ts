@@ -16,8 +16,11 @@ const {
   deleteFoodItem,
   updateFoodItem,
   updateFoodItemStatus,
+  eventsHandler
 } = FoodItemController;
 
+// SSE endpoint
+foodRouter.get("/events", eventsHandler); 
 // create food item
 foodRouter.post("/", auth, createFoodItem);
 

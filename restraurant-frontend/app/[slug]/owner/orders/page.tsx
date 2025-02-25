@@ -45,6 +45,7 @@ import Cookies from "js-cookie";
 import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { useAuthContext } from "@/context/auth-context";
+import useSSE from "@/hooks/use-sse";
 
 interface Order {
   id: string;
@@ -142,6 +143,7 @@ const OrdersPage = () => {
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
+  const { orderData }: any = useSSE(`${process.env.NEXT_PUBLIC_URL}/api/payment/events`, "Order");
 
   interface APIType {
     id: string;
@@ -163,7 +165,7 @@ const OrdersPage = () => {
   const filteredOrders = useMemo(() => {
     const filtered = orders.filter(
       (order) =>
-        (statusFilter === "All" || order.status === statusFilter) &&
+        (statusFilter === "All" || order?.status === statusFilter) &&
         (transactionStatusFilter === "All" ||
           order.transactionStatus === transactionStatusFilter) &&
         (!dateFilter || order.date === format(dateFilter, "yyyy-MM-dd"))
@@ -177,6 +179,7 @@ const OrdersPage = () => {
       router.push(`/login`);
     }
   }, [isAuthenticated, slug, router, isAuthLoading]);
+
 
   const transformOrdersData = useCallback((orders: APIType[]): Order[] => {
     const formatOrder = (order: APIType): Order => {

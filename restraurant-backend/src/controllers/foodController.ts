@@ -16,18 +16,51 @@ const {
 } = FoodItemService;
 
 class FoodItemController {
+  // Store connected clients
+  clients: Response[] = [];
+
+  eventsHandler = (req: Request, res: Response) => {
+    // Set headers for SSE
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    // Send an initial event (optional)
+    res.write(`data: ${JSON.stringify({ message: "Connected to SSE" })}\n\n`);
+
+    // Store the client connection
+    this.clients.push(res);
+
+    // Remove the client when they disconnect
+    req.on("close", () => {
+      const index = this.clients.indexOf(res);
+      if (index !== -1) {
+        this.clients.splice(index, 1);
+      }
+    });
+  };
+
+  // Function to send SSE event to all clients
+  sendSSEEvent = (data: any) => {
+    this.clients.forEach((client) => {
+      client.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+  };
+
+  // Modify your createFoodItem function
   createFoodItem = async (req: Request, res: Response) => {
     try {
       checkRequestAuthentication(req, res);
       const foodItem = await createFoodItem(req.body);
-      // add sse event to update complete restaurant data
+
+      // Send SSE event to all clients
+      this.sendSSEEvent({ message: "New food item added", foodItem });
 
       res.status(201).json({
         message: "Food item created successfully",
-        foodItem: foodItem,
+        foodItem,
       });
     } catch (error) {
-      // update the status if access failed
       if ((error as any).message.includes("Access denied")) {
         res.status(401).json({ message: (error as any).message });
       } else {
@@ -35,7 +68,6 @@ class FoodItemController {
       }
     }
   };
-
   getAllFoodItems = async (req: Request, res: Response) => {
     try {
       const foodItems = await getAllFoodItems(req.body.slug);
@@ -64,6 +96,7 @@ class FoodItemController {
       if (!foodItem) {
         res.status(404).json({ message: "Food item not found" });
       }
+      this.sendSSEEvent({ message: "Food item deleted", foodItem });
       res.status(200).json({ message: "Food item deleted successfully" });
     } catch (error) {
       // update the status if access failed
@@ -83,6 +116,10 @@ class FoodItemController {
         res.status(404).json({ message: "Food item not found" });
       }
       const updatedFoodItem = await updateFoodItem(req.params.id, req.body);
+      this.sendSSEEvent({
+        message: "Food item updated",
+        foodItem: updatedFoodItem,
+      });
       res.status(200).json({
         message: "Food item updated successfully",
         foodItem: updatedFoodItem,
@@ -109,6 +146,11 @@ class FoodItemController {
       if (!updatedFoodItem) {
         res.status(404).json({ message: "Food item not found" });
       }
+
+      this.sendSSEEvent({
+        message: "Food item status updated",
+        foodItem: updatedFoodItem,
+      });
       res.status(200).json({
         message: "Food item status updated successfully",
         foodItem: updatedFoodItem,

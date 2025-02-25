@@ -15,6 +15,37 @@ interface OrderItem {
 }
 
 class PaymentController {
+  // Store connected owners
+  owners: Response[] = [];
+
+  eventsHandler = (req: Request, res: Response) => {
+    // Set headers for SSE
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    // Send an initial event (optional)
+    res.write(`data: ${JSON.stringify({ message: "Connected to SSE" })}\n\n`);
+
+    // Store the client connection
+    this.owners.push(res);
+
+    // Remove the client when they disconnect
+    req.on("close", () => {
+      const index = this.owners.indexOf(res);
+      if (index !== -1) {
+        this.owners.splice(index, 1);
+      }
+    });
+  };
+
+  // Function to send SSE event to all owners
+  sendSSEEvent = (data: any) => {
+    this.owners.forEach((client) => {
+      client.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
+  };
+
   initiatePayment = async (req: Request, res: Response) => {
     try {
       console.log(req.body);
@@ -94,6 +125,11 @@ class PaymentController {
         include: {
           orderItems: true,
         },
+      });
+
+      this.sendSSEEvent({
+        message: "New order initiated",
+        order,
       });
 
       // Create a Transaction in Database (pending)

@@ -2,14 +2,16 @@ import { Router } from "express";
 // Payment Controller
 import paymentController from "../controllers/paymentController";
 
-const paymetRouter = Router();
+const paymentRouter = Router();
 
-const { initiatePayment, checkStatus } = paymentController;
+const { initiatePayment, checkStatus, eventsHandler } = paymentController;
 
+// SSE endpoint
+paymentRouter.get("/events", eventsHandler);
 // initiatePayment route
-paymetRouter.post("/initiate", initiatePayment);
+paymentRouter.post("/initiate", initiatePayment);
 
 // checkStatus route
-paymetRouter.post("/status", checkStatus);
+paymentRouter.post("/status", checkStatus);
 
-export default paymetRouter;
+export default paymentRouter;

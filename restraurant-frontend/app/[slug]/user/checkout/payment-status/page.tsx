@@ -20,7 +20,7 @@ const TransactionResultPage = () => {
   // router
   const router = useRouter();
   // context
-  const { setCartRefreshKey } = useCart();
+  const { clearCart } = useCart();
   // search params
   const searchParams = useSearchParams();
   const [transactionResult, setTransactionResult] = useState<{
@@ -59,10 +59,7 @@ const TransactionResultPage = () => {
             date: new Date(response.data.transaction.order.createdAt),
           };
           setTransactionResult(result);
-          // make cart array empty from local storage
-          // FIXME: site is not updating the cart untill refreshed
-          localStorage.removeItem("cart");
-          setCartRefreshKey((prevKey) => (prevKey + 1) % 10);
+          clearCart();
         }
         return result;
       } catch (error) {
@@ -72,9 +69,10 @@ const TransactionResultPage = () => {
     if (transactionId) {
       fetchTransactionResult(transactionId);
     }
-  }, [makeRequest, setCartRefreshKey, slug, transactionId]);
+  }, [makeRequest, slug, transactionId]);
 
   const handleBackToMenu = () => {
+    
     router.push(`/${slug}/user/menu`);
   };
 

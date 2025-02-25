@@ -17,6 +17,8 @@ import Loader from "@/components/Loader";
 import InfoCard from "@/components/InfoCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CartSidebar from "@/components/CartSidebar";
+import useSSE from "@/hooks/use-sse";
+import { toast } from "@/hooks/use-toast";
 
 interface MenuItem {
   id: string;
@@ -40,6 +42,8 @@ const MenuPage = () => {
   const { cartItems, addItemToCart, updateItemFromCart, getTotalPrice } =
     useCart();
   const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
+  // sse data
+  const { data }: any = useSSE("http://localhost:3001/api/food/events", "Menu");
 
   useEffect(() => {
     if (restaurantData) {
@@ -49,6 +53,26 @@ const MenuPage = () => {
       setAvailableItems(availableData);
     }
   }, [restaurantData, isRestaurantLoading]);
+
+  useEffect(() => {
+    if (data) {
+      // update restaurant data and available items
+      setRestaurantRefreshKey((prev) => prev + 1);
+      // find the item in cart
+      const itemInCart = cartItems.find(
+        (cartItem) => cartItem.itemId === data.foodItem?.id
+      );
+      // if item is in cart
+      if (itemInCart) {
+        // updating cart
+        updateItemFromCart(data.foodItem?.id, -itemInCart.quantity);
+      }
+      toast({
+        title: "Menu Updated",
+        description: data.message,
+      });
+    }
+  }, [data]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
