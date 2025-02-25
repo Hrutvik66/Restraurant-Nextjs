@@ -44,6 +44,7 @@
     "node-cron": "^3.0.3",
     "pg": "^8.13.1",
     "restaurant-app-backend": "file:",
+    "socket.io": "^4.8.1",
     "uuid": "^11.0.5"
   }
 }

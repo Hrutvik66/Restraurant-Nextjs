@@ -13,8 +13,8 @@ import cookieParser from "cookie-parser";
 // cronjob
 import "./cronJob";
 // http and socket
-import http from "http";
-
+import { createServer } from "http";
+import { Server } from "socket.io";
 // import routes
 import testRouter from "./routes/testRoute";
 import foodRouter from "./routes/foodRoute";
@@ -29,7 +29,13 @@ import userRouter from "./routes/user.route";
 
 const app: Application = express();
 
-const server = http.createServer(app);
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  },  
+});
 
 // express middlewares
 app.use(express.json());
@@ -47,6 +53,28 @@ app.use(cors());
 // dotenv config
 dotenv.config();
 
+// socket io
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  // join user to restaurant room
+  socket.on("addUserToRestaurant", (data) => {
+    socket.join(data.restaurantId);
+  });
+  // food item created
+  socket.on("foodItemCreated", (data) => {
+    io.to(data.restaurantId).emit("foodItemCreated", data);
+  });
+  // food item status change
+  socket.on("foodItemStatusChange", (data) => {
+    io.to(data.restaurantId).emit("foodItemStatusChange", data);
+  });
+
+  // disconnect
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
+
 //? routes
 // 1. test route
 app.use("/api/", testRouter);
@@ -60,7 +88,7 @@ app.use("/api/order", orderRouter);
 // app.use("/api/cart", cartRouter);
 // 6. payment route
 app.use("/api/payment", paymentRouter);
-// // 7. owner analytics route
+// 7. owner analytics route
 app.use("/api/owner", analyticsRouter);
 // 8. admin route
 // app.use("/api/admin", adminRouter);
@@ -85,3 +113,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+export { io };

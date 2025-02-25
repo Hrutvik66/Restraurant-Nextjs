@@ -17,6 +17,7 @@ import Loader from "@/components/Loader";
 import InfoCard from "@/components/InfoCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import CartSidebar from "@/components/CartSidebar";
+import { useSocket } from "@/context/socket-context";
 
 interface MenuItem {
   id: string;
@@ -40,6 +41,8 @@ const MenuPage = () => {
   const { cartItems, addItemToCart, updateItemFromCart, getTotalPrice } =
     useCart();
   const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
+  // socket
+  const { socket } = useSocket();
 
   useEffect(() => {
     if (restaurantData) {
@@ -49,6 +52,24 @@ const MenuPage = () => {
       setAvailableItems(availableData);
     }
   }, [restaurantData, isRestaurantLoading]);
+
+  useEffect(() => {
+    console.log("socket not-connected", socket);
+    if (socket) {
+      console.log("socket connected");
+
+      socket.on("foodItemStatusChange", (data: FoodItem) => {
+        // update available items
+        const updatedAvailableItems: MenuItem[] = availableItems.map((item) => {
+          if (item.id === data.id) {
+            return data;
+          }
+          return item;
+        });
+        setAvailableItems(updatedAvailableItems);
+      });
+    }
+  }, [socket]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;

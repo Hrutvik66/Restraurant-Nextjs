@@ -4,6 +4,7 @@ import { Providers } from "../../providers";
 import { Toaster } from "@/components/ui/toaster";
 import MobileCartButton from "@/components/MobileCartButton";
 import Navbar from "@/components/Navbar";
+import { SocketProvider } from "@/context/socket-context";
 
 export const metadata: Metadata = {
   title: "Restraurant",

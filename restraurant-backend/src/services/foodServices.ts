@@ -6,6 +6,8 @@ import prisma from "../prisma/client";
 import { CreateFoodItemDto, UpdateFoodItemDto } from "../dto/foodItemDto";
 // auth
 import { CustomJwtPayload, CustomRequest } from "../middleware/auth.middleware";
+// io
+import { io } from "../index";
 
 class FoodItemService {
   // check request authentication
@@ -37,7 +39,9 @@ class FoodItemService {
         OrderItem: true,
       },
     });
-    return foodItem;
+
+    // emit socket event
+    io.to(foodItem.restaurantId).emit("foodItemCreated", foodItem);
   };
 
   // get all food items of the restaurant using slug
@@ -107,6 +111,10 @@ class FoodItemService {
         isListed: isListed,
       },
     });
+
+    // emit socket event
+    io.to(foodItem.restaurantId).emit("foodItemStatusChange", foodItem);
+    
     return foodItem;
   };
 
