@@ -33,6 +33,7 @@ export interface Restaurant {
   foodItems: FoodItem[];
   createdAt: Date;
   updatedAt: Date;
+  allowService: boolean;
 }
 
 interface RestaurantContextType {

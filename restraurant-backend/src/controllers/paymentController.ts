@@ -127,11 +127,6 @@ class PaymentController {
         },
       });
 
-      this.sendSSEEvent({
-        message: "New order initiated",
-        order,
-      });
-
       // Create a Transaction in Database (pending)
       const transaction = await prisma.transaction.create({
         data: {
@@ -212,7 +207,18 @@ class PaymentController {
             data: { status: "New" },
             include: {
               restaurant: true,
+              orderItems: {
+                include: {
+                  foodItem: true,
+                },
+              },
+              transaction: true,
             },
+          });
+
+          this.sendSSEEvent({
+            message: "New order Created",
+            updatedOrder,
           });
 
           res.redirect(

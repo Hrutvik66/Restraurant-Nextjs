@@ -167,11 +167,7 @@ const Sidebar = ({
   );
 };
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const OwnerLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { restaurantData, setRestaurantRefreshKey } = useRestaurantContext();
@@ -180,6 +176,9 @@ export default function AdminLayout({
 
   const handleOpenChange = async (slug: string, checked: boolean) => {
     try {
+      if (!restaurantData?.allowService) {
+        throw new Error("Service is closed!! Contact Admin.");
+      }
       const response = await makeRequest({
         url: `/api/user/owner/toggle-restaurant-status`,
         method: "PATCH",
@@ -207,7 +206,7 @@ export default function AdminLayout({
       toast({
         variant: "destructive",
         title: "Failed to Update Restaurant Service Status",
-        description: err.response.data.message,
+        description: err.response?.data.message,
       });
     }
   };
@@ -268,4 +267,6 @@ export default function AdminLayout({
       <Toaster />
     </div>
   );
-}
+};
+
+export default OwnerLayout;

@@ -143,7 +143,10 @@ const OrdersPage = () => {
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
-  const { orderData }: any = useSSE(`${process.env.NEXT_PUBLIC_URL}/api/payment/events`, "Order");
+  const { orderData }: any = useSSE(
+    `${process.env.NEXT_PUBLIC_URL}/api/payment/events`,
+    "Order"
+  );
 
   interface APIType {
     id: string;
@@ -180,6 +183,14 @@ const OrdersPage = () => {
     }
   }, [isAuthenticated, slug, router, isAuthLoading]);
 
+  useEffect(() => {
+    if (orderData?.updatedOrder) {
+      console.log("ordeerData", orderData);
+      const data = [orderData?.updatedOrder];
+      const formatedData = transformOrdersData(data);
+      setOrders((prev) => [...prev, formatedData[0]]);
+    }
+  }, [orderData]);
 
   const transformOrdersData = useCallback((orders: APIType[]): Order[] => {
     const formatOrder = (order: APIType): Order => {

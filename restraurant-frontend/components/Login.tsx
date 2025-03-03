@@ -65,8 +65,8 @@ const LoginPage = () => {
       console.log("response", response);
 
       if (response && response.status === 200) {
-        Cookies.set("token", response.data.token);
-        Cookies.set("role", response.data.user.role);
+        Cookies.set("token", response?.data.token);
+        Cookies.set("role", response?.data.user.role);
         login(response.data.user);
         setTimeout(() => {}, 3000);
         toast({
@@ -76,9 +76,9 @@ const LoginPage = () => {
         });
         if (response.data.user.role === "owner") {
           router.push(
-            `/${response.data.user.owner.restaurant.slug}/owner/analytics`
+            `/${response?.data.user.owner.restaurant.slug}/owner/analytics`
           );
-        } else if (response.data.user.role === "admin") {
+        } else if (response?.data.user.role === "admin") {
           router.push(`/admin/restaurants`);
         }
       }
@@ -87,7 +87,7 @@ const LoginPage = () => {
       toast({
         variant: "destructive",
         title: "Login Error",
-        description: error.response.data.message,
+        description: error.response?.data.message,
       });
     } finally {
       setIsLoading(false);
