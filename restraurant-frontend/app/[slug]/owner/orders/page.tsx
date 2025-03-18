@@ -183,15 +183,6 @@ const OrdersPage = () => {
     }
   }, [isAuthenticated, slug, router, isAuthLoading]);
 
-  useEffect(() => {
-    if (orderData?.updatedOrder) {
-      console.log("ordeerData", orderData);
-      const data = [orderData?.updatedOrder];
-      const formatedData = transformOrdersData(data);
-      setOrders((prev) => [...prev, formatedData[0]]);
-    }
-  }, [orderData]);
-
   const transformOrdersData = useCallback((orders: APIType[]): Order[] => {
     const formatOrder = (order: APIType): Order => {
       const {
@@ -255,6 +246,15 @@ const OrdersPage = () => {
     };
     return orders.map((order) => formatOrder(order));
   }, []);
+
+  useEffect(() => {
+    if (orderData?.updatedOrder) {
+      console.log("ordeerData", orderData);
+      const data = [orderData?.updatedOrder];
+      const formatedData = transformOrdersData(data);
+      setOrders((prev) => [...prev, formatedData[0]]);
+    }
+  }, [orderData, transformOrdersData]);
 
   useEffect(() => {
     const fetchData = () => {

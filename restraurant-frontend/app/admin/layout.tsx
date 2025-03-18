@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  BarChart,
   PlusCircle,
   Menu,
   ChevronLeft,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { useRestaurantContext } from "@/context/restaurant-context";
-import { AuthProvider, useAuthContext } from "@/context/auth-context";
+import { useAuthContext } from "@/context/auth-context";
 
 const Sidebar = ({
   className,

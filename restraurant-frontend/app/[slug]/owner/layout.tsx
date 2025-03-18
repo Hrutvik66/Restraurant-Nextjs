@@ -29,7 +29,6 @@ import useApiCall from "@/hooks/use-apicall";
 import Cookies from "js-cookie";
 import { toast } from "@/hooks/use-toast";
 import CustomErrorInterface from "../../../lib/CustomErrorInterface";
-import { AuthProvider } from "@/context/auth-context";
 
 const Sidebar = ({
   className,

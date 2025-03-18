@@ -2,41 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
 import { useAuthContext } from "@/context/auth-context";
 import InfoCard from "@/components/InfoCard";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import useApiCall from "@/hooks/use-apicall";
 import Cookies from "js-cookie";
 import { useRestaurantContext } from "@/context/restaurant-context";
-
-const salesData = [
-  { name: "Mon", sales: 4000 },
-  { name: "Tue", sales: 3000 },
-  { name: "Wed", sales: 5000 },
-  { name: "Thu", sales: 2780 },
-  { name: "Fri", sales: 1890 },
-  { name: "Sat", sales: 6390 },
-  { name: "Sun", sales: 3490 },
-];
-
-const topSellingItems = [
-  { name: "Butter Chicken", sales: 120 },
-  { name: "Paneer Tikka", sales: 98 },
-  { name: "Chicken Biryani", sales: 86 },
-  { name: "Garlic Naan", sales: 72 },
-  { name: "Gulab Jamun", sales: 65 },
-];
 
 const AdminAnalytics = () => {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
@@ -77,7 +50,7 @@ const AdminAnalytics = () => {
       }
     };
     fetchAnalytics();
-  }, []);
+  }, [makeRequest, restaurantData]);
 
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;

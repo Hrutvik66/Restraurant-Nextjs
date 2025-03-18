@@ -10,8 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Minus, Plus, Sheet, ShoppingBag } from "lucide-react";
-import { FoodItem, useRestaurantContext } from "@/context/restaurant-context";
+import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { useRestaurantContext } from "@/context/restaurant-context";
 import { useCart } from "@/context/cart-context";
 import Loader from "@/components/Loader";
 import InfoCard from "@/components/InfoCard";
@@ -72,7 +72,7 @@ const MenuPage = () => {
         description: data.message,
       });
     }
-  }, [data]);
+  }, [data, cartItems, setRestaurantRefreshKey, updateItemFromCart]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;

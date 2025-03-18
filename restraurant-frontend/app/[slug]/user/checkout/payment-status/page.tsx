@@ -69,10 +69,9 @@ const TransactionResultPage = () => {
     if (transactionId) {
       fetchTransactionResult(transactionId);
     }
-  }, [makeRequest, slug, transactionId]);
+  }, [makeRequest, slug, transactionId, clearCart]);
 
   const handleBackToMenu = () => {
-    
     router.push(`/${slug}/user/menu`);
   };
 

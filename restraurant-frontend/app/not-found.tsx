@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import InfoCard from "@/components/InfoCard";
@@ -19,11 +19,8 @@ export default function NotFound() {
   }, []);
 
   const handleClick = () => {
-    console.log(slugRef.current);
-
-    role === "owner"
-      ? router.push(`/${slugRef.current}/owner`)
-      : router.push(`/${slugRef.current}/user/menu`);
+    if (role === "owner") router.push(`/${slugRef.current}/owner`);
+    else router.push(`/${slugRef.current}/user/menu`);
   };
   return (
     <div>

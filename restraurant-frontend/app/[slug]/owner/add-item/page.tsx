@@ -234,7 +234,7 @@ const ManageFoodItems = () => {
       }
     } catch (error) {
       toast({
-        title: "Error",
+        title: `Error:${error}`,
         description: "Failed to update the item status.",
         variant: "destructive",
       });

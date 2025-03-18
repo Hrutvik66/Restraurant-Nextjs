@@ -11,7 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Utensils, TrendingUp, DollarSign, Menu, X, IndianRupee } from 'lucide-react';
+import {
+  Utensils,
+  TrendingUp,
+  DollarSign,
+  Menu,
+  X,
+  IndianRupee,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -142,7 +149,9 @@ export default function LandingPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm sm:text-base">{feature.description}</p>
+                    <p className="text-sm sm:text-base">
+                      {feature.description}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
@@ -158,9 +167,11 @@ export default function LandingPage() {
             </h2>
             <Card className="max-w-md mx-auto">
               <CardHeader>
-                <CardTitle className="text-xl sm:text-2xl">Contact Us</CardTitle>
+                <CardTitle className="text-xl sm:text-2xl">
+                  Contact Us
+                </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  Fill out the form below and we'll be in touch soon.
+                  Fill out the form below and we&apos;ll be in touch soon.
                 </CardDescription>
               </CardHeader>
               <CardContent>

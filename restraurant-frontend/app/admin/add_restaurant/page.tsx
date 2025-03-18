@@ -64,7 +64,7 @@ const AddRestaurantPage = () => {
       }
     } catch (error) {
       toast({
-        title: "Error",
+        title: `Error:${error}`,
         description: "Failed to add restaurant. Please try again.",
         variant: "destructive",
       });

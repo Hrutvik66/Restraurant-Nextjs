@@ -102,7 +102,7 @@ const LoginPage = () => {
       alert(`Password reset link sent to ${forgotPasswordEmail}`);
       setShowForgotPasswordDialog(false);
     } catch (err) {
-      setError("Failed to send password reset email");
+      setError(`Failed to send password reset email:${err}`);
     } finally {
       setIsLoading(false);
     }
