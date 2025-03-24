@@ -167,7 +167,7 @@ const AdminAnalytics = () => {
         <InfoCard
           info="You are not authenticated to view this page. Please log in to access
         the restaurant management features."
-          message="Redirecting to the login page"
+          message="Visit the login page"
         />
       )}
     </div>

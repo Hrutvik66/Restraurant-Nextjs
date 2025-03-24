@@ -98,11 +98,13 @@ export const AuthProvider = ({
         }
       } catch (err) {
         const error = err as CustomErrorInterface;
-        toast({
-          variant: "destructive",
-          title: error.response.data.message,
-          description: "Please login again.",
-        });
+        if (localStorage.getItem("pathname") !== "menu") {
+          toast({
+            variant: "destructive",
+            title: error.response.data.message,
+            description: "Please login again.",
+          });
+        }
       } finally {
         setIsAuthLoading(false);
       }

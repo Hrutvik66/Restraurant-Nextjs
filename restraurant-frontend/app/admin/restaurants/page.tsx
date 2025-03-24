@@ -36,17 +36,19 @@ import useFetch from "@/hooks/use-fetch";
 import useApiCall from "@/hooks/use-apicall";
 import CustomErrorInterface from "@/lib/CustomErrorInterface";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { useAuthContext } from "@/context/auth-context";
 import { Switch } from "@/components/ui/switch";
+import InfoCard from "@/components/InfoCard";
 
 interface Restaurant {
   id: string;
   name: string;
   location: string;
   owner: {
-    email: string;
+    user: {
+      email: string;
+    };
   };
   isOpen: boolean;
   allowService: boolean;
@@ -82,7 +84,7 @@ const RestaurantDetails = ({
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Email</p>
-            <p className="font-medium">{restaurant.owner.email}</p>
+            <p className="font-medium">{restaurant.owner.user?.email}</p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Created At</p>
@@ -108,8 +110,14 @@ const RestaurantDetails = ({
   </Card>
 );
 
-export default function RestaurantsPage() {
-  const { apiData, setRefreshKey } = useFetch("/api/restaurant");
+const RestaurantsPage = () => {
+  const token = Cookies.get("token");
+  const { apiData, setRefreshKey } = useFetch({
+    url: "/api/restaurant",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const { makeRequest, loading } = useApiCall();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>(
@@ -122,13 +130,6 @@ export default function RestaurantsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthLoading) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, router, isAuthLoading]);
 
   /**
    * Takes an array of restaurants and transforms them into the `Restaurant` type
@@ -136,26 +137,17 @@ export default function RestaurantsPage() {
    * @returns {Array<Restaurant>}
    */
   const transformRestaurantsData = useCallback(
-    (
-      restaurants: Array<{
-        id: string;
-        name: string;
-        location: string;
-        owner: {
-          name: string;
-          email: string;
-        };
-        isOpen: boolean;
-        allowService: boolean;
-        createdAt: string;
-      }>
-    ): Restaurant[] => {
-      return restaurants.map((restaurant) => ({
+    (restaurants: any): Restaurant[] => {
+      console.log(restaurants);
+
+      return restaurants.map((restaurant: Restaurant) => ({
         id: restaurant.id,
         name: restaurant.name,
         location: restaurant.location ?? "-",
         owner: {
-          email: restaurant.owner.email,
+          user: {
+            email: restaurant.owner.user?.email,
+          },
         },
         isOpen: restaurant.isOpen,
         allowService: restaurant.allowService,
@@ -198,7 +190,6 @@ export default function RestaurantsPage() {
     allowService: boolean
   ) => {
     try {
-      const token = Cookies.get("token");
       const response = await makeRequest({
         url: `/api/restaurant/${restaurantId}/toogleService`,
         method: "PATCH",
@@ -252,7 +243,7 @@ export default function RestaurantsPage() {
       </h1>
       {loading ? (
         <Loader info="Fetching restaurants" />
-      ) : (
+      ) : isAuthenticated ? (
         <div>
           <div className="mb-6 flex flex-wrap gap-4">
             <Select onValueChange={setStatusFilter} value={statusFilter}>
@@ -311,7 +302,7 @@ export default function RestaurantsPage() {
                         {restaurant.location}
                       </p>
                       <p>
-                        <strong>Email:</strong> {restaurant.owner.email}
+                        <strong>Email:</strong> {restaurant.owner.user?.email}
                       </p>
                       <div>
                         <strong>Service:</strong>
@@ -372,7 +363,9 @@ export default function RestaurantsPage() {
                         {filteredRestaurants.map((restaurant) => (
                           <TableRow key={restaurant.id}>
                             <TableCell>{restaurant.name}</TableCell>
-                            <TableCell>{restaurant.owner.email}</TableCell>
+                            <TableCell>
+                              {restaurant.owner.user?.email}
+                            </TableCell>
                             <TableCell>
                               {new Date(restaurant.createdAt).toLocaleString()}
                             </TableCell>
@@ -437,7 +430,15 @@ export default function RestaurantsPage() {
             </>
           )}
         </div>
+      ) : (
+        <InfoCard
+          info="You are not authenticated to view this page. Please log in to access
+      the restaurant management features."
+          message="Visit the login page"
+        />
       )}
     </div>
   );
-}
+};
+
+export default RestaurantsPage;

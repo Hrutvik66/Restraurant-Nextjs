@@ -46,6 +46,10 @@ const MenuPage = () => {
   const { data }: any = useSSE("http://localhost:3001/api/food/events", "Menu");
 
   useEffect(() => {
+    localStorage.setItem("pathname", "menu");
+  }, []);
+
+  useEffect(() => {
     if (restaurantData) {
       const availableData = restaurantData?.foodItems?.filter(
         (item) => !item.isDeleted && item.isListed
@@ -72,7 +76,7 @@ const MenuPage = () => {
         description: data.message,
       });
     }
-  }, [data, cartItems, setRestaurantRefreshKey, updateItemFromCart]);
+  }, [data]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;

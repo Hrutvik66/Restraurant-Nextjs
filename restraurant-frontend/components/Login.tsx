@@ -75,11 +75,11 @@ const LoginPage = () => {
           description: response.data.message,
         });
         if (response.data.user.role === "owner") {
-          router.push(
+          router.replace(
             `/${response?.data.user.owner.restaurant.slug}/owner/analytics`
           );
         } else if (response?.data.user.role === "admin") {
-          router.push(`/admin/restaurants`);
+          router.replace(`/admin/restaurants`);
         }
       }
     } catch (err) {

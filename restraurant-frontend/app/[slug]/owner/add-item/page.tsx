@@ -65,14 +65,6 @@ const ManageFoodItems = () => {
     slug: slug,
   });
   const [editMode, setEditMode] = useState(false);
-  const router = useRouter();
-
-  // auth check useEffect
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthLoading) {
-      router.push(`/login`);
-    }
-  }, [isAuthenticated, slug, router, isAuthLoading]);
 
   if (isAuthLoading) {
     return <Loader info="Authenticating..." />;

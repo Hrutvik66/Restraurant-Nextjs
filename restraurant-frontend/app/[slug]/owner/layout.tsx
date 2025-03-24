@@ -61,7 +61,8 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
-      router.push(`/${slug}/owner/`);
+      localStorage.clear();
+      router.push(`/login`);
     }
   };
   return (
@@ -172,6 +173,7 @@ const OwnerLayout = ({ children }: { children: React.ReactNode }) => {
   const { restaurantData, setRestaurantRefreshKey } = useRestaurantContext();
   const { makeRequest } = useApiCall();
   const { slug } = useParams();
+  const { isAuthenticated } = useAuthContext();
 
   const handleOpenChange = async (slug: string, checked: boolean) => {
     try {
@@ -237,16 +239,18 @@ const OwnerLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex flex-col flex-1 overflow-hidden z-49">
         <header className="bg-white shadow-md p-4 pt-5 md:pt-7 flex justify-between items-center">
           <h2 className="text-2xl font-semibold text-gray-800 ml-4">
-            {restaurantData?.name}
+            {isAuthenticated ? restaurantData?.name : ""}
           </h2>
           <div className="flex items-center">
-            <Switch
-              checked={restaurantData?.isOpen ?? false}
-              onCheckedChange={(checked) =>
-                handleOpenChange(slug as string, checked)
-              }
-              className="mr-12 md:mr-0"
-            />
+            {isAuthenticated && (
+              <Switch
+                checked={restaurantData?.isOpen ?? false}
+                onCheckedChange={(checked) =>
+                  handleOpenChange(slug as string, checked)
+                }
+                className="mr-12 md:mr-0"
+              />
+            )}
             <Button
               variant="ghost"
               size="icon"

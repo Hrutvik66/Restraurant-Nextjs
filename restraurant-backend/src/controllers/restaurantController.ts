@@ -9,6 +9,12 @@ const { getAllRestaurants, getRestaurantBySlug } = restaurantServices;
 class RestaurantController {
   async getRestaurants(req: Request, res: Response) {
     try {
+      if ((req as CustomRequest).token) {
+        const { role } = (req as CustomRequest).token as CustomJwtPayload;
+        if (role !== "admin") {
+          throw new Error("Access denied");
+        }
+      }
       const restaurants = await getAllRestaurants();
       res.status(200).json(restaurants);
     } catch (error) {
@@ -30,7 +36,7 @@ class RestaurantController {
   toggleRestaurantService = async (req: Request, res: Response) => {
     try {
       if ((req as CustomRequest).token) {
-        const { id, role } = (req as CustomRequest).token as CustomJwtPayload;
+        const { role } = (req as CustomRequest).token as CustomJwtPayload;
         if (role !== "admin") {
           throw new Error("Access denied");
         }

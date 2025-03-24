@@ -50,6 +50,7 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
+      localStorage.clear();
       router.push(`/login`);
     }
   };

@@ -46,6 +46,7 @@ import { useParams, useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { useAuthContext } from "@/context/auth-context";
 import useSSE from "@/hooks/use-sse";
+import InfoCard from "@/components/InfoCard";
 
 interface Order {
   id: string;
@@ -132,8 +133,14 @@ const OrderDetails = ({
 );
 
 const OrdersPage = () => {
+  const token = Cookies.get("token");
   const { slug } = useParams();
-  const { apiData, setRefreshKey } = useFetch(`/api/order/?slug=${slug}`);
+  const { apiData, setRefreshKey } = useFetch({
+    url: `/api/order/?slug=${slug}`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const { makeRequest, loading } = useApiCall();
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -142,7 +149,6 @@ const OrdersPage = () => {
   const [dateFilter, setDateFilter] = useState<Date | undefined>(new Date());
 
   const { isAuthenticated, isAuthLoading } = useAuthContext();
-  const router = useRouter();
   const { orderData }: any = useSSE(
     `${process.env.NEXT_PUBLIC_URL}/api/payment/events`,
     "Order"
@@ -175,13 +181,6 @@ const OrdersPage = () => {
     );
     return filtered;
   }, [dateFilter, orders, statusFilter, transactionStatusFilter]);
-
-  // auth check useEffect
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthLoading) {
-      router.push(`/login`);
-    }
-  }, [isAuthenticated, slug, router, isAuthLoading]);
 
   const transformOrdersData = useCallback((orders: APIType[]): Order[] => {
     const formatOrder = (order: APIType): Order => {
@@ -293,7 +292,6 @@ const OrdersPage = () => {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const token = Cookies.get("token");
       const response = await makeRequest({
         url: `/api/order/${orderId}`,
         method: "PUT",
@@ -348,7 +346,7 @@ const OrdersPage = () => {
       </h1>
       {loading ? (
         <Loader info="Fetching orders" />
-      ) : (
+      ) : isAuthenticated ? (
         <div>
           <div className="mb-6 flex flex-wrap gap-4">
             <Select onValueChange={setStatusFilter} value={statusFilter}>
@@ -554,6 +552,12 @@ const OrdersPage = () => {
             </>
           )}
         </div>
+      ) : (
+        <InfoCard
+          info="You are not authenticated to view this page. Please log in to access
+    the order management features."
+          message="Visit the login page"
+        />
       )}
     </div>
   );

@@ -2,7 +2,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-const useFetch = (url: string) => {
+const useFetch = ({ url, headers }: { url: string; headers?: object }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [apiData, setApiData] = useState(null);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -15,7 +15,11 @@ const useFetch = (url: string) => {
     const fetchData = async () => {
       const URL = process.env.NEXT_PUBLIC_URL + url;
       try {
-        const resp = await axios.get(URL);
+        const resp = await axios({
+          url: URL,
+          method: "GET",
+          headers: headers,
+        });
         console.log(resp);
 
         setApiData(resp.data);

@@ -33,11 +33,6 @@ const AnalysisPage = () => {
   const { isAuthenticated, isAuthLoading } = useAuthContext();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthLoading) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, router, isAuthLoading]);
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Analysis Dashboard</h1>

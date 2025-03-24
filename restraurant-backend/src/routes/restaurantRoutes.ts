@@ -10,7 +10,7 @@ const { getRestaurants, getRestaurantBySlug, toggleRestaurantService } =
 const restaurantRouter = Router();
 
 // get all restaurants
-restaurantRouter.get("/", getRestaurants);
+restaurantRouter.get("/", auth, getRestaurants);
 
 // get restaurant by slug
 restaurantRouter.get("/:slug", getRestaurantBySlug);
