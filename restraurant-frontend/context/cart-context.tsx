@@ -6,6 +6,7 @@ import {
   useContext,
   ReactNode,
   useCallback,
+  useRef,
 } from "react";
 // food-context
 import { useRestaurantContext } from "./restaurant-context";
@@ -52,6 +53,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     []
   );
   const [cartRefreshKey, setCartRefreshKey] = useState<number>(0);
+  // Track previous restaurant status to detect changes
+  const prevRestaurantStatusRef = useRef<{
+    allowService: boolean | undefined;
+    isOpen: boolean | undefined;
+  } | null>(null);
 
   useEffect(() => {
     const storedCart = localStorage.getItem("cart");
@@ -59,6 +65,54 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       setCartItems(JSON.parse(storedCart));
     }
   }, []);
+
+  // Clear cart when restaurant service is disallowed or restaurant is closed
+  useEffect(() => {
+    if (restaurantData) {
+      const prevStatus = prevRestaurantStatusRef.current;
+      const currentAllowService = restaurantData.allowService;
+      const currentIsOpen = restaurantData.isOpen;
+
+      // Check if status changed from valid to invalid
+      const wasServiceAllowed = prevStatus?.allowService ?? true;
+      const wasOpen = prevStatus?.isOpen ?? true;
+      const isServiceAllowed = currentAllowService ?? false;
+      const isOpen = currentIsOpen ?? false;
+
+      // Clear cart if:
+      // 1. Service was allowed but now disallowed, OR
+      // 2. Restaurant was open but now closed
+      // AND cart has items
+      const shouldClearCart =
+        ((wasServiceAllowed && !isServiceAllowed) || (wasOpen && !isOpen)) &&
+        cartItems.length > 0;
+
+      if (shouldClearCart) {
+        setCartItems([]);
+        localStorage.removeItem("cart");
+        setFilteredCartItems([]);
+
+        toast({
+          title: "Cart Cleared",
+          description: !isServiceAllowed
+            ? "Service has been suspended. Your cart has been cleared."
+            : "Restaurant is now closed. Your cart has been cleared.",
+          variant: "destructive",
+        });
+      }
+
+      // Update previous status (only if status actually changed to avoid unnecessary updates)
+      if (
+        prevStatus?.allowService !== currentAllowService ||
+        prevStatus?.isOpen !== currentIsOpen
+      ) {
+        prevRestaurantStatusRef.current = {
+          allowService: currentAllowService,
+          isOpen: currentIsOpen,
+        };
+      }
+    }
+  }, [restaurantData?.allowService, restaurantData?.isOpen, cartItems.length]);
 
   // Filter food items based on what's in the cart
   useEffect(() => {
