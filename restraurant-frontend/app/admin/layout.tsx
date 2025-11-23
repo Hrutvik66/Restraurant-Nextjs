@@ -50,7 +50,10 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
-      router.push(`/login`);
+      // Defer navigation to prevent setState during render
+      setTimeout(() => {
+        router.push(`/login`);
+      }, 0);
     }
   };
   return (

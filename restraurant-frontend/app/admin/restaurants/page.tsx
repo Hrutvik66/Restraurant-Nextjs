@@ -82,7 +82,9 @@ const RestaurantDetails = ({
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Email</p>
-            <p className="font-medium">{restaurant.owner.email}</p>
+            <p className="font-medium">
+              {restaurant.owner?.email || "No owner assigned"}
+            </p>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-500">Created At</p>
@@ -126,7 +128,10 @@ export default function RestaurantsPage() {
 
   useEffect(() => {
     if (!isAuthenticated && !isAuthLoading) {
-      router.push("/login");
+      // Defer navigation to prevent setState during render
+      setTimeout(() => {
+        router.push("/login");
+      }, 0);
     }
   }, [isAuthenticated, router, isAuthLoading]);
 
@@ -144,31 +149,47 @@ export default function RestaurantsPage() {
         owner: {
           name: string;
           email: string;
-        };
+        } | null;
         isOpen: boolean;
         allowService: boolean;
         createdAt: string;
       }>
     ): Restaurant[] => {
-      return restaurants.map((restaurant) => ({
-        id: restaurant.id,
-        name: restaurant.name,
-        location: restaurant.location ?? "-",
-        owner: {
-          email: restaurant.owner.email,
-        },
-        isOpen: restaurant.isOpen,
-        allowService: restaurant.allowService,
-        createdAt: restaurant.createdAt,
-      }));
+      return restaurants
+        .filter((restaurant) => restaurant && restaurant.id && restaurant.name) // Filter out invalid entries
+        .map((restaurant) => ({
+          id: restaurant.id,
+          name: restaurant.name,
+          location: restaurant.location ?? "-",
+          owner: {
+            email: restaurant.owner?.email ?? "No owner assigned",
+          },
+          isOpen: restaurant.isOpen ?? false,
+          allowService: restaurant.allowService ?? false,
+          createdAt: restaurant.createdAt ?? new Date().toISOString(),
+        }));
     },
     []
   );
 
   useEffect(() => {
     const fetchData = () => {
-      const data = transformRestaurantsData(apiData ?? []);
-      setRestaurants(data);
+      try {
+        if (apiData && Array.isArray(apiData)) {
+          const data = transformRestaurantsData(apiData);
+          setRestaurants(data);
+        } else {
+          setRestaurants([]);
+        }
+      } catch (error) {
+        console.error("Error transforming restaurant data:", error);
+        setRestaurants([]);
+        toast({
+          title: "Data Processing Error",
+          description: "Failed to process restaurant data",
+          variant: "destructive",
+        });
+      }
     };
 
     fetchData();
@@ -222,7 +243,7 @@ export default function RestaurantsPage() {
       const err = error as CustomErrorInterface;
       toast({
         title: "Failed to Update Restaurant Service Status",
-        description: err.response.data.message,
+        description: err.response?.data?.message || "An error occurred",
         variant: "destructive",
       });
     }
@@ -311,7 +332,8 @@ export default function RestaurantsPage() {
                         {restaurant.location}
                       </p>
                       <p>
-                        <strong>Email:</strong> {restaurant.owner.email}
+                        <strong>Email:</strong>{" "}
+                        {restaurant.owner?.email || "No owner assigned"}
                       </p>
                       <div>
                         <strong>Service:</strong>
@@ -372,7 +394,9 @@ export default function RestaurantsPage() {
                         {filteredRestaurants.map((restaurant) => (
                           <TableRow key={restaurant.id}>
                             <TableCell>{restaurant.name}</TableCell>
-                            <TableCell>{restaurant.owner.email}</TableCell>
+                            <TableCell>
+                              {restaurant.owner?.email || "No owner assigned"}
+                            </TableCell>
                             <TableCell>
                               {new Date(restaurant.createdAt).toLocaleString()}
                             </TableCell>

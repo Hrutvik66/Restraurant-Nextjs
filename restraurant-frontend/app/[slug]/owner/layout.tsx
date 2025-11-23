@@ -61,7 +61,10 @@ const Sidebar = ({
   const handleLogout = () => {
     if (logout) {
       logout();
-      router.push(`/${slug}/owner/`);
+      // Defer navigation to prevent setState during render
+      setTimeout(() => {
+        router.push(`/${slug}/owner/`);
+      }, 0);
     }
   };
   return (

@@ -5,6 +5,7 @@ import {
   useEffect,
   useContext,
   ReactNode,
+  useCallback,
 } from "react";
 // food-context
 import { useRestaurantContext } from "./restaurant-context";
@@ -61,60 +62,75 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Filter food items based on what's in the cart
   useEffect(() => {
-    if (restaurantData?.foodItems && cartItems.length > 0) {
-      const filteredItems = cartItems
-        .map((cartItem) => {
-          const foodItem = restaurantData?.foodItems.find(
-            (item) => item.id == cartItem.itemId
-          );
-          if (foodItem) {
-            if (!foodItem.isDeleted && foodItem.isListed) {
-              return {
-                ...foodItem,
-                quantity: cartItem.quantity, // Include the quantity from the cart
-              };
-            } else {
-              // remove the item from the cart and local storage
-              const updatedCart = cartItems.filter(
-                (item) => item.itemId !== cartItem.itemId
-              );
-              localStorage.setItem("cart", JSON.stringify(updatedCart));
-              return null;
-            }
-          }
-          return null;
-        })
-        .filter((item) => item !== null); // Filter out null items (in case some IDs don't match)
+    if (restaurantData?.foodItems) {
+      setFilteredCartItems((prevFiltered) => {
+        if (cartItems.length === 0) {
+          return [];
+        }
 
-      setFilteredCartItems(filteredItems);
+        const filteredItems = cartItems
+          .map((cartItem) => {
+            const foodItem = restaurantData?.foodItems.find(
+              (item) => item.id == cartItem.itemId
+            );
+            if (foodItem) {
+              if (!foodItem.isDeleted && foodItem.isListed) {
+                return {
+                  ...foodItem,
+                  quantity: cartItem.quantity, // Include the quantity from the cart
+                };
+              } else {
+                // remove the item from the cart and local storage
+                setCartItems((prevItems) => {
+                  const updatedCart = prevItems.filter(
+                    (item) => item.itemId !== cartItem.itemId
+                  );
+                  localStorage.setItem("cart", JSON.stringify(updatedCart));
+                  return updatedCart;
+                });
+                return null;
+              }
+            }
+            return null;
+          })
+          .filter((item) => item !== null); // Filter out null items (in case some IDs don't match)
+
+        return filteredItems;
+      });
     }
   }, [restaurantData, cartItems, cartRefreshKey]);
 
-  const addItemToCart = async (itemId: string) => {
-    const existingItem = cartItems.find((item) => item.itemId === itemId);
-    const quantity: number = 1;
-    if (!existingItem) {
-      const updatedCart = [...cartItems, { itemId, quantity }];
-      setCartItems(updatedCart);
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
-    } else {
-      toast({
-        title: "Item already exists in cart",
-        description: "You've already added this item to your cart.",
-      });
-    }
-  };
+  const addItemToCart = useCallback(async (itemId: string) => {
+    setCartItems((prevItems) => {
+      const existingItem = prevItems.find((item) => item.itemId === itemId);
+      const quantity: number = 1;
+      if (!existingItem) {
+        const updatedCart = [...prevItems, { itemId, quantity }];
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        return updatedCart;
+      } else {
+        toast({
+          title: "Item already exists in cart",
+          description: "You've already added this item to your cart.",
+        });
+        return prevItems;
+      }
+    });
+  }, []);
 
-  const updateItemFromCart = (id: string, change: number) => {
-    const updatedCart = cartItems
-      .map((item) =>
-        item.itemId === id
-          ? { ...item, quantity: Math.max(0, item.quantity + change) }
-          : item
-      )
-      .filter((item) => item.quantity > 0);
-    setCartItems(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+  const updateItemFromCart = useCallback((id: string, change: number) => {
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems
+        .map((item) =>
+          item.itemId === id
+            ? { ...item, quantity: Math.max(0, item.quantity + change) }
+            : item
+        )
+        .filter((item) => item.quantity > 0);
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      return updatedCart;
+    });
+
     setFilteredCartItems((items) =>
       items
         .map((item) =>
@@ -127,23 +143,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         )
         .filter((item) => item.quantity > 0)
     );
-  };
+  }, []);
 
   // clear cart
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setCartItems([]);
     localStorage.removeItem("cart");
     setFilteredCartItems([]);
-  };
+  }, []);
 
   // get the total price of all items
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     const total = filteredCartItems.reduce(
       (sum, item) => sum + Number(item.price) * item.quantity,
       0
     );
     return total;
-  };
+  }, [filteredCartItems]);
 
   return (
     <CartContext.Provider

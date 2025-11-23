@@ -3,6 +3,8 @@ import { CustomJwtPayload, CustomRequest } from "../middleware/auth.middleware";
 import restaurantServices from "../services/restaurantServices";
 // Express
 import { Request, Response } from "express";
+// Import UserController to access SSE functionality
+import userController from "./user.controller";
 
 const { getAllRestaurants, getRestaurantBySlug } = restaurantServices;
 
@@ -10,6 +12,8 @@ class RestaurantController {
   async getRestaurants(req: Request, res: Response) {
     try {
       const restaurants = await getAllRestaurants();
+      console.log(restaurants);
+
       res.status(200).json(restaurants);
     } catch (error) {
       res.status(500).json({ error: "Error getting restaurant" });
@@ -36,6 +40,17 @@ class RestaurantController {
         }
       }
       const data = await restaurantServices.toggleOwnerService(req.params.id);
+      
+      // Send SSE event to all connected clients
+      userController.sendRestaurantStatusSSEEvent({
+        message: `Restaurant service has been ${data.allowService ? "allowed" : "disallowed"} by administrator`,
+        restaurant: {
+          slug: data.slug,
+          isOpen: data.isOpen,
+          allowService: data.allowService,
+        },
+      });
+
       res.status(200).json({
         data: data,
         message: `Owner service ${

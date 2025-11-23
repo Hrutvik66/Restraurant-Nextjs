@@ -12,6 +12,7 @@ const {
   toggleRestaurantStatus,
   getAllOwners,
   getUserDataById,
+  restaurantStatusEventsHandler,
 } = userController;
 
 // Owner routes
@@ -25,6 +26,9 @@ userRouter.post("/login", loginUser);
 
 // update password
 userRouter.put("/update-password", auth, updatePassword);
+
+// SSE endpoint for restaurant status updates
+userRouter.get("/restaurant-status/events", restaurantStatusEventsHandler);
 
 // toggle restaurant open status
 userRouter.patch(

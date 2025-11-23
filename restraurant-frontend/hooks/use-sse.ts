@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 const useSSE = (url: string, updateFor: string) => {
   const [data, setData] = useState({});
   const [orderData, setOrderData] = useState({});
+  const [restaurantStatusData, setRestaurantStatusData] = useState({});
 
   useEffect(() => {
     const eventSource = new EventSource(url);
@@ -15,6 +16,8 @@ const useSSE = (url: string, updateFor: string) => {
           setData(data);
         } else if (updateFor === "Order") {
           setOrderData(data);
+        } else if (updateFor === "RestaurantStatus") {
+          setRestaurantStatusData(data);
         }
       } catch (error) {
         console.error("Error parsing SSE event:", error);
@@ -24,9 +27,9 @@ const useSSE = (url: string, updateFor: string) => {
     return () => {
       eventSource.close();
     };
-  }, []);
+  }, [url, updateFor]);
 
-  return { data, orderData };
+  return { data, orderData, restaurantStatusData };
 };
 
 export default useSSE;

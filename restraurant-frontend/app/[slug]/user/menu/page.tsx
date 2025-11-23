@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,6 +44,9 @@ const MenuPage = () => {
   const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
   // sse data
   const { data }: any = useSSE("http://localhost:3001/api/food/events", "Menu");
+  // Track last processed SSE event to avoid duplicate processing
+  const lastProcessedEventRef = useRef<string | null>(null);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     if (restaurantData) {
@@ -52,27 +55,82 @@ const MenuPage = () => {
       );
       setAvailableItems(availableData);
     }
-  }, [restaurantData, isRestaurantLoading]);
+  }, [restaurantData]);
+
+  // Memoized callback for handling SSE data
+  const handleSSEData = useCallback(
+    (sseData: any) => {
+      // Ignore initial connection message
+      if (sseData.message === "Connected to SSE") {
+        return;
+      }
+
+      // Check if we have a foodItem in the event (actual menu updates)
+      if (!sseData.foodItem) {
+        return;
+      }
+
+      // Prevent concurrent processing
+      if (isProcessingRef.current) {
+        return;
+      }
+
+      // Create a unique key for this event to prevent duplicate processing
+      // Use message + foodItem id + timestamp for uniqueness
+      const timestamp = sseData.foodItem.updatedAt
+        ? new Date(sseData.foodItem.updatedAt).getTime()
+        : Date.now();
+      const eventKey = `${sseData.message}-${sseData.foodItem.id}-${timestamp}`;
+
+      // Skip if we've already processed this event
+      if (lastProcessedEventRef.current === eventKey) {
+        return;
+      }
+
+      // Mark as processing and this event as processed
+      isProcessingRef.current = true;
+      lastProcessedEventRef.current = eventKey;
+
+      // Update restaurant data and available items
+      // Use setTimeout to defer the refresh, allowing user interactions to complete first
+      setTimeout(() => {
+        setRestaurantRefreshKey((prev) => prev + 1);
+
+        // Find the item in cart
+        const itemInCart = cartItems.find(
+          (cartItem) => cartItem.itemId === sseData.foodItem?.id
+        );
+
+        // If item is in cart and it was deleted or unlisted, remove it
+        if (
+          itemInCart &&
+          (sseData.foodItem.isDeleted || !sseData.foodItem.isListed)
+        ) {
+          updateItemFromCart(sseData.foodItem?.id, -itemInCart.quantity);
+        }
+
+        // Show toast after a delay to avoid interfering with user interactions
+        setTimeout(() => {
+          toast({
+            title: "Menu Updated",
+            description: sseData.message,
+          });
+        }, 200);
+
+        // Reset processing flag after menu update completes
+        setTimeout(() => {
+          isProcessingRef.current = false;
+        }, 500);
+      }, 100);
+    },
+    [cartItems, setRestaurantRefreshKey, updateItemFromCart]
+  );
 
   useEffect(() => {
-    if (data) {
-      // update restaurant data and available items
-      setRestaurantRefreshKey((prev) => prev + 1);
-      // find the item in cart
-      const itemInCart = cartItems.find(
-        (cartItem) => cartItem.itemId === data.foodItem?.id
-      );
-      // if item is in cart
-      if (itemInCart) {
-        // updating cart
-        updateItemFromCart(data.foodItem?.id, -itemInCart.quantity);
-      }
-      toast({
-        title: "Menu Updated",
-        description: data.message,
-      });
+    if (data && Object.keys(data).length > 0) {
+      handleSSEData(data);
     }
-  }, [data, cartItems, setRestaurantRefreshKey, updateItemFromCart]);
+  }, [data, handleSSEData]);
 
   if (isRestaurantLoading) {
     return <Loader info="Loading Menu" />;
@@ -100,7 +158,12 @@ const MenuPage = () => {
         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-center text-gray-900">
           Our Menu
         </h1>
-        {!restaurantData?.isOpen ? (
+        {!restaurantData?.allowService ? (
+          <InfoCard
+            info="Service Temporarily Unavailable"
+            message="This restaurant's service has been temporarily suspended by the administrator. Please contact the restaurant or check back later."
+          />
+        ) : !restaurantData?.isOpen ? (
           <InfoCard
             info="Restaurant is currently closed"
             message="Please come back later"
@@ -151,6 +214,7 @@ const MenuPage = () => {
                         variant="default"
                         onClick={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           addItemToCart(item.id);
                         }}
                       >
