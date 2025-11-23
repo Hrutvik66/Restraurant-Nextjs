@@ -1,5 +1,12 @@
 // react
-import { createContext, useState, useEffect, useContext, JSX } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  JSX,
+} from "react";
 // js-cookie
 import Cookies from "js-cookie";
 // toast
@@ -110,18 +117,16 @@ export const AuthProvider = ({
     fetchUser();
   }, [makeRequest, slug]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
     Cookies.remove("token");
-  };
+  }, []);
 
-  const login = (user: UserType) => {
-    setIsAuthLoading(true);
+  const login = useCallback((user: UserType) => {
     setUser(user);
     setIsAuthenticated(true);
-    setIsAuthLoading(false);
-  };
+  }, []);
 
   return (
     <AuthContext.Provider

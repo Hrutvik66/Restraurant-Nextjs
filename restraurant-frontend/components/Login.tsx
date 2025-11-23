@@ -68,19 +68,22 @@ const LoginPage = () => {
         Cookies.set("token", response?.data.token);
         Cookies.set("role", response?.data.user.role);
         login(response.data.user);
-        setTimeout(() => {}, 3000);
         toast({
           variant: "default",
           title: "Login Successful",
           description: response.data.message,
         });
-        if (response.data.user.role === "owner") {
-          router.push(
-            `/${response?.data.user.owner.restaurant.slug}/owner/analytics`
-          );
-        } else if (response?.data.user.role === "admin") {
-          router.push(`/admin/restaurants`);
-        }
+
+        // Defer navigation to prevent setState during render
+        setTimeout(() => {
+          if (response.data.user.role === "owner") {
+            router.push(
+              `/${response?.data.user.owner.restaurant.slug}/owner/analytics`
+            );
+          } else if (response?.data.user.role === "admin") {
+            router.push(`/admin/restaurants`);
+          }
+        }, 0);
       }
     } catch (err) {
       const error = err as CustomErrorInterface;
