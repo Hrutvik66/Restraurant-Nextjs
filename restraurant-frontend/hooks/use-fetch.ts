@@ -16,7 +16,6 @@ const useFetch = (url: string) => {
       const URL = process.env.NEXT_PUBLIC_URL + url;
       try {
         const resp = await axios.get(URL);
-        console.log(resp);
 
         setApiData(resp.data);
       } catch (error: any) {

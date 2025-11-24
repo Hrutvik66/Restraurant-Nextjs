@@ -12,7 +12,6 @@ class RestaurantController {
   async getRestaurants(req: Request, res: Response) {
     try {
       const restaurants = await getAllRestaurants();
-      console.log(restaurants);
 
       res.status(200).json(restaurants);
     } catch (error) {
@@ -40,10 +39,12 @@ class RestaurantController {
         }
       }
       const data = await restaurantServices.toggleOwnerService(req.params.id);
-      
+
       // Send SSE event to all connected clients
       userController.sendRestaurantStatusSSEEvent({
-        message: `Restaurant service has been ${data.allowService ? "allowed" : "disallowed"} by administrator`,
+        message: `Restaurant service has been ${
+          data.allowService ? "allowed" : "disallowed"
+        } by administrator`,
         restaurant: {
           slug: data.slug,
           isOpen: data.isOpen,

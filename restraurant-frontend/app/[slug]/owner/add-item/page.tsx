@@ -123,7 +123,6 @@ const ManageFoodItems = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        console.log("response", response);
 
         if (response && response.status === 201) {
           setRestaurantRefreshKey((prevKey: number) => (prevKey + 1) % 10);

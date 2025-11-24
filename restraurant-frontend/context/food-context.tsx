@@ -44,7 +44,6 @@ export const FoodProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_URL}/api/food`
         );
-        console.log("hi");
 
         setFoodItems(response.data);
       } catch (error) {
